@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lunaflow/core/constants/app_constants.dart';
+import 'package:lunaflow/core/l10n/app_localizations.dart';
+import 'package:lunaflow/core/l10n/locale_controller.dart';
 import 'package:lunaflow/core/routes/app_routes.dart';
 import 'package:lunaflow/core/theme/app_colors.dart';
 import 'package:lunaflow/core/theme/theme_controller.dart';
@@ -11,7 +13,8 @@ import 'package:lunaflow/features/symptoms/presentation/controllers/symptom_cont
 import 'package:lunaflow/shared/widgets/lunar_card.dart';
 import 'package:lunaflow/shared/widgets/section_title.dart';
 
-/// Profile and settings: personal info, cycle defaults, notifications, theme, privacy.
+/// Profile and settings: personal info, cycle defaults, notifications,
+/// theme, language and privacy.
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -43,6 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _save() async {
+    final t = AppLocalizations.of(context);
     final session = context.read<SessionController>();
     final messenger = ScaffoldMessenger.of(context);
     final user = session.user;
@@ -54,28 +58,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
       averagePeriodDuration: _periodDuration.round(),
       notifications: _notifications,
     ));
-    messenger.showSnackBar(const SnackBar(content: Text('Profile updated')));
+    messenger.showSnackBar(SnackBar(content: Text(t.profileUpdated)));
   }
 
   Future<void> _deleteData() async {
+    final t = AppLocalizations.of(context);
     final cycle = context.read<CycleController>();
     final symptoms = context.read<SymptomController>();
     final messenger = ScaffoldMessenger.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete all data?'),
-        content: const Text('All period days and symptoms will be removed from this device.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
-        ],
-      ),
+      builder: (context) {
+        final t2 = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(t2.deleteConfirmTitle),
+          content: Text(t2.deleteConfirmBody),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(t2.cancel)),
+            TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(t2.delete)),
+          ],
+        );
+      },
     );
     if (confirmed != true) return;
     await cycle.clearData();
     await symptoms.clearData();
-    messenger.showSnackBar(const SnackBar(content: Text('Your data was deleted')));
+    messenger.showSnackBar(SnackBar(content: Text(t.dataDeleted)));
   }
 
   Future<void> _logout() async {
@@ -86,15 +98,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final themeController = context.watch<ThemeController>();
+    final localeController = context.watch<LocaleController>();
     final email = context.read<SessionController>().user?.email ?? '';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile & settings')),
+      appBar: AppBar(title: Text(t.settings)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
           children: [
+            // ── Avatar / name ──────────────────────────────────────────
             LunarCard(
               child: Column(
                 children: [
@@ -102,9 +117,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     radius: 34,
                     backgroundColor: AppColors.purple,
                     child: Text(
-                      _nameController.text.isEmpty ? '?' : _nameController.text[0].toUpperCase(),
+                      _nameController.text.isEmpty
+                          ? '?'
+                          : _nameController.text[0].toUpperCase(),
                       style: const TextStyle(
-                          fontSize: 28, color: Colors.white, fontWeight: FontWeight.w700),
+                          fontSize: 28,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -113,18 +132,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   TextField(
                     controller: _nameController,
                     onChanged: (_) => setState(() {}),
-                    decoration: const InputDecoration(
-                        labelText: 'Name', prefixIcon: Icon(Icons.person_outline)),
+                    decoration: InputDecoration(
+                        labelText: t.name,
+                        prefixIcon: const Icon(Icons.person_outline)),
                   ),
                 ],
               ),
             ),
+
+            // ── Cycle settings ─────────────────────────────────────────
             LunarCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SectionTitle('Cycle settings'),
-                  Text('Average cycle length: ${_cycleLength.round()} days'),
+                  SectionTitle(t.cycleSettings),
+                  Text('${t.avgCycleLen}: ${_cycleLength.round()} ${t.days_label}'),
                   Slider(
                     value: _cycleLength,
                     min: 21,
@@ -132,7 +154,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     divisions: 19,
                     onChanged: (v) => setState(() => _cycleLength = v),
                   ),
-                  Text('Average period duration: ${_periodDuration.round()} days'),
+                  Text('${t.avgPeriodDur}: ${_periodDuration.round()} ${t.days_label}'),
                   Slider(
                     value: _periodDuration,
                     min: 2,
@@ -140,86 +162,132 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     divisions: 8,
                     onChanged: (v) => setState(() => _periodDuration = v),
                   ),
-                  const Text(
-                    'Used until LunaFlow has enough logged data to calculate your own averages.',
-                    style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                  Text(
+                    t.mvpNote,
+                    style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                   ),
                 ],
               ),
             ),
+
+            // ── Notifications ──────────────────────────────────────────
             LunarCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SectionTitle('Notifications'),
+                  SectionTitle(t.notifications),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Period reminders'),
+                    title: Text(t.periodReminder),
                     value: _notifications.periodReminders,
                     onChanged: (v) => setState(
                         () => _notifications = _notifications.copyWith(periodReminders: v)),
                   ),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Fertile window alerts'),
+                    title: Text(t.fertileAlert),
                     value: _notifications.fertileWindowAlerts,
                     onChanged: (v) => setState(
-                        () => _notifications = _notifications.copyWith(fertileWindowAlerts: v)),
+                        () => _notifications =
+                            _notifications.copyWith(fertileWindowAlerts: v)),
                   ),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Daily log reminder'),
+                    title: Text(t.dailyReminder),
                     value: _notifications.dailyLogReminder,
                     onChanged: (v) => setState(
-                        () => _notifications = _notifications.copyWith(dailyLogReminder: v)),
+                        () => _notifications =
+                            _notifications.copyWith(dailyLogReminder: v)),
                   ),
-                  const Text('Preferences are saved, but no real notifications are sent in the MVP.',
-                      style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                  Text(t.notifNote,
+                      style:
+                          const TextStyle(fontSize: 12, color: AppColors.textMuted)),
                 ],
               ),
             ),
+
+            // ── Theme ──────────────────────────────────────────────────
             LunarCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SectionTitle('Theme'),
+                  SectionTitle(t.theme),
                   SizedBox(
                     width: double.infinity,
                     child: SegmentedButton<ThemeMode>(
-                      segments: const [
-                        ButtonSegment(value: ThemeMode.light, label: Text('Light')),
-                        ButtonSegment(value: ThemeMode.dark, label: Text('Dark')),
-                        ButtonSegment(value: ThemeMode.system, label: Text('System')),
+                      segments: [
+                        ButtonSegment(
+                            value: ThemeMode.light, label: Text(t.light)),
+                        ButtonSegment(
+                            value: ThemeMode.dark, label: Text(t.dark)),
+                        ButtonSegment(
+                            value: ThemeMode.system, label: Text(t.system)),
                       ],
                       selected: {themeController.themeMode},
-                      onSelectionChanged: (s) => themeController.setThemeMode(s.first),
+                      onSelectionChanged: (s) =>
+                          themeController.setThemeMode(s.first),
                     ),
                   ),
                 ],
               ),
             ),
+
+            // ── Language / Idioma ──────────────────────────────────────
             LunarCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SectionTitle('Privacy'),
-                  const Text(
-                    'In this MVP your data is kept only in the app memory and is never sent '
-                    'to a server. ${AppConstants.disclaimer}',
-                    style: TextStyle(height: 1.4),
+                  SectionTitle(t.language),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(
+                          value: 'en',
+                          label: Text('English'),
+                          icon: Text('🇺🇸',
+                              style: TextStyle(fontSize: 18)),
+                        ),
+                        ButtonSegment(
+                          value: 'es',
+                          label: Text('Español'),
+                          icon: Text('🇲🇽',
+                              style: TextStyle(fontSize: 18)),
+                        ),
+                      ],
+                      selected: {localeController.locale.languageCode},
+                      onSelectionChanged: (s) => localeController
+                          .setLocale(Locale(s.first)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // ── Privacy ────────────────────────────────────────────────
+            LunarCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SectionTitle(t.privacy),
+                  Text(
+                    '${t.privacyNote} ${AppConstants.disclaimer}',
+                    style: const TextStyle(height: 1.4),
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton.icon(
                     onPressed: _deleteData,
                     icon: const Icon(Icons.delete_outline_rounded),
-                    label: const Text('Delete all my data'),
+                    label: Text(t.deleteData),
                   ),
                 ],
               ),
             ),
-            ElevatedButton(onPressed: _save, child: const Text('Save changes')),
+
+            ElevatedButton(onPressed: _save, child: Text(t.saveChanges)),
             const SizedBox(height: 8),
-            TextButton(onPressed: _logout, child: const Text('Log out')),
+            TextButton(onPressed: _logout, child: Text(t.logOut)),
           ],
         ),
       ),

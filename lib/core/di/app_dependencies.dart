@@ -1,3 +1,4 @@
+import 'package:lunaflow/core/l10n/locale_controller.dart';
 import 'package:lunaflow/core/theme/theme_controller.dart';
 import 'package:lunaflow/features/authentication/data/repositories/local_user_repository.dart';
 import 'package:lunaflow/features/authentication/domain/repositories/user_repository.dart';
@@ -24,6 +25,7 @@ class AppDependencies {
     required this.cycleController,
     required this.symptomController,
     required this.themeController,
+    required this.localeController,
   });
 
   factory AppDependencies() {
@@ -63,6 +65,7 @@ class AppDependencies {
       cycleController: cycle,
       symptomController: symptoms,
       themeController: ThemeController(),
+      localeController: LocaleController(),
     );
   }
 
@@ -70,4 +73,5 @@ class AppDependencies {
   final CycleController cycleController;
   final SymptomController symptomController;
   final ThemeController themeController;
+  final LocaleController localeController;
 }

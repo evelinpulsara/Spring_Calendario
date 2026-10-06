@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lunaflow/core/constants/app_constants.dart';
 import 'package:lunaflow/core/di/app_dependencies.dart';
+import 'package:lunaflow/core/l10n/app_localizations.dart';
+import 'package:lunaflow/core/l10n/locale_controller.dart';
 import 'package:lunaflow/core/routes/app_routes.dart';
 import 'package:lunaflow/core/theme/app_theme.dart';
 import 'package:lunaflow/core/theme/theme_controller.dart';
@@ -24,6 +26,7 @@ class LunaFlowApp extends StatelessWidget {
         ChangeNotifierProvider<CycleController>.value(value: dependencies.cycleController),
         ChangeNotifierProvider<SymptomController>.value(value: dependencies.symptomController),
         ChangeNotifierProvider<ThemeController>.value(value: dependencies.themeController),
+        ChangeNotifierProvider<LocaleController>.value(value: dependencies.localeController),
       ],
       child: const _LunaFlowMaterialApp(),
     );
@@ -36,12 +39,20 @@ class _LunaFlowMaterialApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeMode = context.watch<ThemeController>().themeMode;
+    final locale = context.watch<LocaleController>().locale;
     return MaterialApp(
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
+      locale: locale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        DefaultMaterialLocalizations.delegate,
+        DefaultWidgetsLocalizations.delegate,
+      ],
       initialRoute: AppRoutes.splash,
       onGenerateRoute: AppRoutes.onGenerateRoute,
     );
