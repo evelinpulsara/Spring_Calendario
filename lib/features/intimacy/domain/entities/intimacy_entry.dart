@@ -15,3 +15,21 @@ extension ProtectionTypeLabel on ProtectionType {
       case ProtectionType.unsure:
         return AppLanguage.tr('No estoy segura', 'Not sure');
     }
+  }
+
+  /// Sin protección o sin saberlo: se trata como sin protección.
+  bool get isUnprotected => this == ProtectionType.none || this == ProtectionType.unsure;
+}
+
+/// Registro de una relación sexual en un día.
+class IntimacyEntry {
+  const IntimacyEntry({
+    required this.id,
+    required this.date,
+    required this.protection,
+  });
+
+  final String id;
+  final DateTime date;
+  final ProtectionType protection;
+}
