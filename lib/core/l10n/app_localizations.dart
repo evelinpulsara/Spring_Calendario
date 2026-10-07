@@ -23,6 +23,9 @@ class AppLocalizations {
 
   bool get _es => locale.languageCode == 'es';
 
+  /// Convenience getter used by screens to branch on language.
+  bool get isSpanish => _es;
+
   // Navigation / AppBar titles
   String get appName        => 'LunaFlow';
   String get dashboard      => _es ? 'Inicio'          : 'Dashboard';

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:lunaflow/core/l10n/app_localizations.dart';
 import 'package:lunaflow/core/theme/app_colors.dart';
 import 'package:lunaflow/core/utils/date_utils.dart';
 import 'package:lunaflow/features/cycle/domain/entities/flow_intensity.dart';
@@ -80,6 +81,7 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> {
   }
 
   Future<void> _save() async {
+    final t = AppLocalizations.of(context);
     final symptoms = context.read<SymptomController>();
     final cycle = context.read<CycleController>();
     final messenger = ScaffoldMessenger.of(context);
@@ -93,17 +95,35 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> {
     }
 
     messenger.showSnackBar(
-      SnackBar(content: Text('Saved for ${AppDateUtils.shortDate(_date)}')),
+      SnackBar(
+        content: Text(t.isSpanish
+            ? 'Guardado para el ${AppDateUtils.shortDate(_date)}'
+            : 'Saved for ${AppDateUtils.shortDate(_date)}'),
+      ),
     );
     if (widget.isStandalone && mounted) navigator.pop();
   }
 
+  String _symptomLabel(SymptomType type, AppLocalizations t) {
+    switch (type) {
+      case SymptomType.cramps:   return t.cramps;
+      case SymptomType.headache: return t.headache;
+      case SymptomType.mood:     return t.mood;
+      case SymptomType.bloating: return t.bloating;
+      case SymptomType.acne:     return t.acne;
+      case SymptomType.fatigue:  return t.fatigue;
+      case SymptomType.appetite: return t.appetite;
+      case SymptomType.sleep:    return t.sleep;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isToday = AppDateUtils.isSameDay(_date, AppDateUtils.today());
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Log symptoms'),
+        title: Text(t.logSymptomsTitle),
         automaticallyImplyLeading: widget.isStandalone,
       ),
       body: SafeArea(
@@ -122,7 +142,7 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> {
                   TextButton.icon(
                     onPressed: _pickDate,
                     icon: const Icon(Icons.event_rounded, size: 18),
-                    label: Text(isToday ? 'Today' : AppDateUtils.longDate(_date)),
+                    label: Text(isToday ? t.today : AppDateUtils.longDate(_date)),
                   ),
                   IconButton(
                     icon: const Icon(Icons.chevron_right_rounded),
@@ -136,7 +156,7 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SectionTitle('Flow intensity'),
+                  SectionTitle(t.isSpanish ? 'Intensidad del flujo' : 'Flow intensity'),
                   Wrap(
                     spacing: 8,
                     children: [
@@ -156,9 +176,13 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SectionTitle('Symptoms'),
-                  const Text('Tap a dot to set how strong it is (1-5). Tap it again to clear.',
-                      style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                  SectionTitle(t.isSpanish ? 'Síntomas' : 'Symptoms'),
+                  Text(
+                    t.isSpanish
+                        ? 'Toca un punto para indicar su intensidad (1-5). Tócalo de nuevo para borrarlo.'
+                        : 'Tap a dot to set how strong it is (1-5). Tap it again to clear.',
+                    style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                  ),
                   const SizedBox(height: 8),
                   for (final type in SymptomType.values)
                     Padding(
@@ -167,7 +191,7 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> {
                         children: [
                           Icon(type.icon, color: AppColors.purple),
                           const SizedBox(width: 12),
-                          Expanded(child: Text(type.label)),
+                          Expanded(child: Text(_symptomLabel(type, t))),
                           _IntensitySelector(
                             value: _levels[type] ?? 0,
                             onChanged: (value) => setState(() {
@@ -187,7 +211,7 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> {
             ElevatedButton.icon(
               onPressed: _save,
               icon: const Icon(Icons.check_rounded),
-              label: const Text('Save'),
+              label: Text(t.isSpanish ? 'Guardar' : 'Save'),
             ),
           ],
         ),
@@ -217,7 +241,8 @@ class _IntensitySelector extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: filled ? AppColors.purple : Colors.transparent,
-              border: Border.all(color: AppColors.purple.withAlpha(filled ? 255 : 110), width: 1.5),
+              border: Border.all(
+                  color: AppColors.purple.withAlpha(filled ? 255 : 110), width: 1.5),
             ),
           ),
         );

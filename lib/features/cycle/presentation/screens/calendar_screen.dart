@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:lunaflow/core/l10n/app_localizations.dart';
 import 'package:lunaflow/core/routes/app_routes.dart';
 import 'package:lunaflow/core/theme/app_colors.dart';
 import 'package:lunaflow/core/utils/date_utils.dart';
@@ -29,6 +30,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final cycle = context.watch<CycleController>();
     final symptoms = context.watch<SymptomController>();
     final projection = cycle.projection;
@@ -36,7 +38,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     final firstDay = _visibleMonth;
     final daysInMonth = DateTime(firstDay.year, firstDay.month + 1, 0).day;
-    final leadingBlanks = firstDay.weekday - 1; // week starts on Monday
+    final leadingBlanks = firstDay.weekday - 1;
+
+    // Day-of-week headers translated
+    final weekDays = t.isSpanish
+        ? ['L', 'M', 'X', 'J', 'V', 'S', 'D']
+        : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
     final cells = <Widget>[
       for (var i = 0; i < leadingBlanks; i++) const SizedBox.shrink(),
@@ -59,7 +66,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cycle calendar')),
+      appBar: AppBar(title: Text(t.calendar)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
@@ -83,7 +90,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      for (final label in ['M', 'T', 'W', 'T', 'F', 'S', 'S'])
+                      for (final label in weekDays)
                         Expanded(
                           child: Center(
                             child: Text(label,
@@ -103,7 +110,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ],
               ),
             ),
-            const _Legend(),
+            _Legend(),
             _SelectedDayCard(date: _selected),
           ],
         ),
@@ -205,6 +212,8 @@ class _Legend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+
     Widget item(Widget marker, String label) => Row(
           mainAxisSize: MainAxisSize.min,
           children: [marker, const SizedBox(width: 6), Text(label, style: const TextStyle(fontSize: 12))],
@@ -225,17 +234,17 @@ class _Legend extends StatelessWidget {
         spacing: 16,
         runSpacing: 8,
         children: [
-          item(dot(fill: AppColors.deepPink), 'Period'),
-          item(dot(border: AppColors.deepPink), 'Predicted period'),
-          item(dot(fill: AppColors.purple.withAlpha(45)), 'Fertile window'),
-          item(dot(fill: AppColors.purple), 'Ovulation'),
+          item(dot(fill: AppColors.deepPink), t.periodDays),
+          item(dot(border: AppColors.deepPink), t.predicted),
+          item(dot(fill: AppColors.purple.withAlpha(45)), t.fertile),
+          item(dot(fill: AppColors.purple), t.isSpanish ? 'Ovulación' : 'Ovulation'),
           item(
             Container(
                 width: 6,
                 height: 6,
                 decoration:
                     const BoxDecoration(shape: BoxShape.circle, color: AppColors.deepPurple)),
-            'Symptoms',
+            t.isSpanish ? 'Síntomas' : 'Symptoms',
           ),
         ],
       ),
@@ -250,6 +259,7 @@ class _SelectedDayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final cycle = context.watch<CycleController>();
     final symptoms = context.watch<SymptomController>();
     final projection = cycle.projection;
@@ -258,11 +268,16 @@ class _SelectedDayCard extends StatelessWidget {
     final entries = symptoms.entriesFor(date);
 
     final status = <String>[
-      if (flow != null) 'Period day (${flow.label.toLowerCase()} flow)',
-      if (flow == null && projection.predictedPeriodDays.contains(date)) 'Predicted period',
-      if (projection.ovulationDays.contains(date)) 'Estimated ovulation day',
+      if (flow != null)
+        t.isSpanish
+            ? 'Día de menstruación (flujo ${flow.label.toLowerCase()})'
+            : 'Period day (${flow.label.toLowerCase()} flow)',
+      if (flow == null && projection.predictedPeriodDays.contains(date))
+        t.isSpanish ? 'Menstruación predicha' : 'Predicted period',
+      if (projection.ovulationDays.contains(date))
+        t.isSpanish ? 'Día de ovulación estimado' : 'Estimated ovulation day',
       if (projection.fertileDays.contains(date) && !projection.ovulationDays.contains(date))
-        'Fertile window (estimate)',
+        t.isSpanish ? 'Ventana fértil (estimado)' : 'Fertile window (estimate)',
     ];
 
     return LunarCard(
@@ -273,8 +288,8 @@ class _SelectedDayCard extends StatelessWidget {
               style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           if (status.isEmpty && entries.isEmpty)
-            const Text('Nothing recorded for this day.',
-                style: TextStyle(color: AppColors.textMuted)),
+            Text(t.isSpanish ? 'Nada registrado para este día.' : 'Nothing recorded for this day.',
+                style: const TextStyle(color: AppColors.textMuted)),
           for (final line in status) Text(line),
           if (entries.isNotEmpty) ...[
             const SizedBox(height: 8),
@@ -298,7 +313,9 @@ class _SelectedDayCard extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: isFuture ? null : () => cycle.togglePeriodDay(date),
               icon: Icon(cycle.isPeriodDay(date) ? Icons.close_rounded : Icons.water_drop_rounded),
-              label: Text(cycle.isPeriodDay(date) ? 'Remove period mark' : 'Mark as period day'),
+              label: Text(cycle.isPeriodDay(date)
+                  ? (t.isSpanish ? 'Quitar marca de menstruación' : 'Remove period mark')
+                  : (t.isSpanish ? 'Marcar como día de menstruación' : 'Mark as period day')),
             ),
           ),
           const SizedBox(height: 8),
@@ -312,14 +329,19 @@ class _SelectedDayCard extends StatelessWidget {
                         arguments: LogSymptomsArgs(initialDate: date),
                       ),
               icon: const Icon(Icons.edit_note_rounded),
-              label: const Text('Log symptoms for this day'),
+              label: Text(t.isSpanish
+                  ? 'Registrar síntomas de este día'
+                  : 'Log symptoms for this day'),
             ),
           ),
           if (isFuture)
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
-              child: Text('You can only log today or past days.',
-                  style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                  t.isSpanish
+                      ? 'Solo puedes registrar hoy o días pasados.'
+                      : 'You can only log today or past days.',
+                  style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
             ),
         ],
       ),

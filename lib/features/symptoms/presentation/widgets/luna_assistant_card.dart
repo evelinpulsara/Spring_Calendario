@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lunaflow/core/constants/app_constants.dart';
+import 'package:lunaflow/core/l10n/app_localizations.dart';
 import 'package:lunaflow/core/theme/app_colors.dart';
 import 'package:lunaflow/features/cycle/presentation/controllers/cycle_controller.dart';
 import 'package:lunaflow/features/symptoms/presentation/controllers/symptom_controller.dart';
@@ -12,6 +13,7 @@ class LunaAssistantCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final symptoms = context.watch<SymptomController>();
     final cycle = context.read<CycleController>();
     final insight = symptoms.insight;
@@ -33,9 +35,12 @@ class LunaAssistantCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           if (insight == null)
-            const Text('Ask Luna for a personalised insight based on your cycle and symptom logs.')
+            Text(t.isSpanish
+                ? 'Pídele a Luna un consejo personalizado basado en tu ciclo y síntomas.'
+                : 'Ask Luna for a personalised insight based on your cycle and symptom logs.')
           else ...[
-            Text(insight.title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+            Text(insight.title,
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
             const SizedBox(height: 6),
             Text(insight.message, style: const TextStyle(height: 1.4)),
           ],
@@ -51,11 +56,15 @@ class LunaAssistantCard extends StatelessWidget {
                       ),
               icon: symptoms.isGenerating
                   ? const SizedBox(
-                      width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2))
                   : const Icon(Icons.nightlight_round, size: 18),
               label: Text(symptoms.isGenerating
-                  ? 'Luna is thinking...'
-                  : (insight == null ? 'Generate insight' : 'Refresh insight')),
+                  ? (t.isSpanish ? 'Luna está pensando...' : 'Luna is thinking...')
+                  : insight == null
+                      ? (t.isSpanish ? 'Generar consejo' : 'Generate insight')
+                      : (t.isSpanish ? 'Actualizar consejo' : 'Refresh insight')),
             ),
           ),
           const SizedBox(height: 8),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:lunaflow/core/l10n/app_localizations.dart';
 import 'package:lunaflow/core/theme/app_colors.dart';
 import 'package:lunaflow/core/utils/date_utils.dart';
 import 'package:lunaflow/features/cycle/domain/entities/cycle_phase.dart';
@@ -18,6 +19,7 @@ class InsightsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final cycle = context.watch<CycleController>();
     final symptoms = context.watch<SymptomController>();
     final prediction = cycle.prediction;
@@ -27,7 +29,7 @@ class InsightsScreen extends StatelessWidget {
     final maxCount = top.isEmpty ? 1 : top.first.value;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cycle insights')),
+      appBar: AppBar(title: Text(t.insights)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
@@ -37,16 +39,20 @@ class InsightsScreen extends StatelessWidget {
                 Expanded(
                   child: StatTile(
                     icon: Icons.loop_rounded,
-                    label: 'Average cycle',
-                    value: avgCycle == null ? '--' : '${avgCycle.toStringAsFixed(1)} days',
+                    label: t.averageCycle,
+                    value: avgCycle == null
+                        ? '--'
+                        : '${avgCycle.toStringAsFixed(1)} ${t.days_label}',
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: StatTile(
                     icon: Icons.water_drop_rounded,
-                    label: 'Average period',
-                    value: avgPeriod == null ? '--' : '${avgPeriod.toStringAsFixed(1)} days',
+                    label: t.averagePeriod,
+                    value: avgPeriod == null
+                        ? '--'
+                        : '${avgPeriod.toStringAsFixed(1)} ${t.days_label}',
                   ),
                 ),
               ],
@@ -57,12 +63,14 @@ class InsightsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SectionTitle('Predictions'),
-                    _row('Next period', AppDateUtils.longDate(prediction.nextPeriodStart)),
-                    _row('Estimated ovulation', AppDateUtils.longDate(prediction.ovulationDate)),
-                    _row('Fertile window',
+                    SectionTitle(t.isSpanish ? 'Predicciones' : 'Predictions'),
+                    _row(t.isSpanish ? 'Próxima menstruación' : 'Next period',
+                        AppDateUtils.longDate(prediction.nextPeriodStart)),
+                    _row(t.isSpanish ? 'Ovulación estimada' : 'Estimated ovulation',
+                        AppDateUtils.longDate(prediction.ovulationDate)),
+                    _row(t.fertileWindow,
                         AppDateUtils.range(prediction.fertileWindowStart, prediction.fertileWindowEnd)),
-                    _row('Current phase', prediction.phase.label),
+                    _row(t.currentPhase, _phaseLabel(prediction.phase, t)),
                   ],
                 ),
               ),
@@ -70,10 +78,12 @@ class InsightsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SectionTitle('Most common symptoms'),
+                  SectionTitle(t.topSymptoms),
                   if (top.isEmpty)
-                    const Text('Log symptoms to see them here.',
-                        style: TextStyle(color: AppColors.textMuted)),
+                    Text(t.isSpanish
+                        ? 'Registra síntomas para verlos aquí.'
+                        : 'Log symptoms to see them here.',
+                        style: const TextStyle(color: AppColors.textMuted)),
                   for (final item in top)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -81,7 +91,7 @@ class InsightsScreen extends StatelessWidget {
                         children: [
                           Icon(item.key.icon, size: 18, color: AppColors.purple),
                           const SizedBox(width: 10),
-                          SizedBox(width: 110, child: Text(item.key.label)),
+                          SizedBox(width: 110, child: Text(_symptomLabel(item.key, t))),
                           Expanded(
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(8),
@@ -106,18 +116,27 @@ class InsightsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SectionTitle('Recent cycle history'),
+                  SectionTitle(t.isSpanish ? 'Historial reciente de ciclos' : 'Recent cycle history'),
                   if (cycle.recentCycles.isEmpty)
-                    const Text('No cycles yet.', style: TextStyle(color: AppColors.textMuted)),
+                    Text(t.isSpanish ? 'Sin ciclos aún.' : 'No cycles yet.',
+                        style: const TextStyle(color: AppColors.textMuted)),
                   for (final item in cycle.recentCycles)
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       dense: true,
                       leading: const Icon(Icons.brightness_2_rounded, color: AppColors.deepPink),
-                      title: Text('Started ${AppDateUtils.shortDate(item.startDate)}'),
-                      subtitle: Text('Period: ${item.periodLength} days'),
+                      title: Text(t.isSpanish
+                          ? 'Inició el ${AppDateUtils.shortDate(item.startDate)}'
+                          : 'Started ${AppDateUtils.shortDate(item.startDate)}'),
+                      subtitle: Text(t.isSpanish
+                          ? 'Período: ${item.periodLength} ${t.days_label}'
+                          : 'Period: ${item.periodLength} days'),
                       trailing: Text(
-                        item.isInProgress ? 'In progress' : '${item.cycleLength} day cycle',
+                        item.isInProgress
+                            ? (t.isSpanish ? 'En curso' : 'In progress')
+                            : (t.isSpanish
+                                ? 'Ciclo de ${item.cycleLength} días'
+                                : '${item.cycleLength} day cycle'),
                         style: const TextStyle(color: AppColors.textMuted),
                       ),
                     ),
@@ -129,6 +148,32 @@ class InsightsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _phaseLabel(CyclePhase phase, AppLocalizations t) {
+    switch (phase) {
+      case CyclePhase.menstrual:
+        return t.menstrualPhase;
+      case CyclePhase.follicular:
+        return t.follicularPhase;
+      case CyclePhase.ovulation:
+        return t.ovulationPhase;
+      case CyclePhase.luteal:
+        return t.lutealPhase;
+    }
+  }
+
+  String _symptomLabel(SymptomType type, AppLocalizations t) {
+    switch (type) {
+      case SymptomType.cramps:   return t.cramps;
+      case SymptomType.headache: return t.headache;
+      case SymptomType.mood:     return t.mood;
+      case SymptomType.bloating: return t.bloating;
+      case SymptomType.acne:     return t.acne;
+      case SymptomType.fatigue:  return t.fatigue;
+      case SymptomType.appetite: return t.appetite;
+      case SymptomType.sleep:    return t.sleep;
+    }
   }
 
   Widget _row(String label, String value) {

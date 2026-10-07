@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:lunaflow/core/l10n/app_localizations.dart';
 import 'package:lunaflow/core/routes/app_routes.dart';
 import 'package:lunaflow/core/theme/app_colors.dart';
 import 'package:lunaflow/core/utils/date_utils.dart';
@@ -22,6 +23,7 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final user = context.watch<SessionController>().user;
     final cycle = context.watch<CycleController>();
     final symptoms = context.watch<SymptomController>();
@@ -33,9 +35,14 @@ class DashboardScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           children: [
-            Text('Hello, ${user?.name ?? 'there'}',
-                style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
-            Text(AppDateUtils.longDate(today), style: const TextStyle(color: AppColors.textMuted)),
+            Text(
+              t.isSpanish
+                  ? 'Hola, ${user?.name ?? 'amiga'}'
+                  : 'Hello, ${user?.name ?? 'there'}',
+              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+            ),
+            Text(AppDateUtils.longDate(today),
+                style: const TextStyle(color: AppColors.textMuted)),
             const SizedBox(height: 16),
             if (prediction == null)
               _EmptyCycleCard(onLogToday: () => cycle.setPeriodDay(today))
@@ -46,7 +53,7 @@ class DashboardScreen extends StatelessWidget {
                   Expanded(
                     child: StatTile(
                       icon: Icons.water_drop_rounded,
-                      label: 'Next period',
+                      label: t.nextPeriod,
                       value: AppDateUtils.shortDate(prediction.nextPeriodStart),
                     ),
                   ),
@@ -54,7 +61,7 @@ class DashboardScreen extends StatelessWidget {
                   Expanded(
                     child: StatTile(
                       icon: Icons.brightness_2_rounded,
-                      label: 'Ovulation',
+                      label: t.isSpanish ? 'Ovulación' : 'Ovulation',
                       value: AppDateUtils.shortDate(prediction.ovulationDate),
                     ),
                   ),
@@ -62,7 +69,7 @@ class DashboardScreen extends StatelessWidget {
                   Expanded(
                     child: StatTile(
                       icon: Icons.spa_rounded,
-                      label: 'Fertile window',
+                      label: t.fertileWindow,
                       value: AppDateUtils.range(
                           prediction.fertileWindowStart, prediction.fertileWindowEnd),
                     ),
@@ -75,10 +82,10 @@ class DashboardScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SectionTitle("Today's symptoms"),
+                  SectionTitle(t.isSpanish ? 'Síntomas de hoy' : "Today's symptoms"),
                   if (symptoms.todayEntries.isEmpty)
-                    const Text('Nothing logged yet today.',
-                        style: TextStyle(color: AppColors.textMuted))
+                    Text(t.noSymptomsYet,
+                        style: const TextStyle(color: AppColors.textMuted))
                   else
                     Wrap(
                       spacing: 8,
@@ -100,7 +107,7 @@ class DashboardScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SectionTitle('Quick log'),
+                  SectionTitle(t.isSpanish ? 'Registro rápido' : 'Quick log'),
                   Wrap(
                     spacing: 8,
                     runSpacing: 4,
@@ -127,8 +134,12 @@ class DashboardScreen extends StatelessWidget {
                           ? Icons.check_circle_rounded
                           : Icons.water_drop_outlined),
                       label: Text(cycle.isPeriodDay(today)
-                          ? 'Period logged today (tap to undo)'
-                          : 'My period started today'),
+                          ? (t.isSpanish
+                              ? 'Menstruación registrada (toca para deshacer)'
+                              : 'Period logged today (tap to undo)')
+                          : (t.isSpanish
+                              ? 'Mi menstruación empezó hoy'
+                              : 'My period started today')),
                     ),
                   ),
                 ],
@@ -147,15 +158,52 @@ class _CycleHeroCard extends StatelessWidget {
 
   final CyclePrediction prediction;
 
-  String get _countdown {
+  String _countdown(AppLocalizations t) {
     final days = prediction.daysUntilNextPeriod;
-    if (days <= 0) return 'Period expected today';
-    if (days == 1) return 'Period expected tomorrow';
-    return 'Next period in $days days';
+    if (t.isSpanish) {
+      if (days <= 0) return 'Menstruación esperada hoy';
+      if (days == 1) return 'Menstruación esperada mañana';
+      return 'Próxima menstruación en $days días';
+    } else {
+      if (days <= 0) return 'Period expected today';
+      if (days == 1) return 'Period expected tomorrow';
+      return 'Next period in $days days';
+    }
+  }
+
+  String _phaseLabel(AppLocalizations t) {
+    switch (prediction.phase) {
+      case CyclePhase.menstrual:  return t.menstrualPhase;
+      case CyclePhase.follicular: return t.follicularPhase;
+      case CyclePhase.ovulation:  return t.ovulationPhase;
+      case CyclePhase.luteal:     return t.lutealPhase;
+    }
+  }
+
+  String _phaseDescription(AppLocalizations t) {
+    switch (prediction.phase) {
+      case CyclePhase.menstrual:
+        return t.isSpanish
+            ? 'Buen momento para descansar, hidratarte y ser amable contigo misma.'
+            : prediction.phase.description;
+      case CyclePhase.follicular:
+        return t.isSpanish
+            ? 'La energía suele aumentar. Ideal para planificar y nuevas rutinas.'
+            : prediction.phase.description;
+      case CyclePhase.ovulation:
+        return t.isSpanish
+            ? 'Pico fértil estimado de tu ciclo.'
+            : prediction.phase.description;
+      case CyclePhase.luteal:
+        return t.isSpanish
+            ? 'Algunos síntomas premenstruales pueden aparecer. Registra cómo te sientes.'
+            : prediction.phase.description;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final progress = ((prediction.cycleDay - 1) / prediction.cycleLength).clamp(0.0, 1.0);
     return LunarCard(
       gradient: AppColors.heroGradient,
@@ -172,21 +220,31 @@ class _CycleHeroCard extends StatelessWidget {
                     color: Colors.white24,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text(prediction.phase.label,
+                  child: Text(_phaseLabel(t),
                       style: const TextStyle(color: Colors.white, fontSize: 12)),
                 ),
                 const SizedBox(height: 12),
-                Text('Day ${prediction.cycleDay}',
-                    style: const TextStyle(
-                        color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800)),
-                Text('of ${prediction.cycleLength}-day cycle',
-                    style: const TextStyle(color: Colors.white70)),
+                Text(
+                  t.isSpanish
+                      ? 'Día ${prediction.cycleDay}'
+                      : 'Day ${prediction.cycleDay}',
+                  style: const TextStyle(
+                      color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800),
+                ),
+                Text(
+                  t.isSpanish
+                      ? 'de un ciclo de ${prediction.cycleLength} días'
+                      : 'of ${prediction.cycleLength}-day cycle',
+                  style: const TextStyle(color: Colors.white70),
+                ),
                 const SizedBox(height: 12),
-                Text(_countdown,
-                    style: const TextStyle(color: AppColors.softPink, fontWeight: FontWeight.w700)),
+                Text(_countdown(t),
+                    style: const TextStyle(
+                        color: AppColors.softPink, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 6),
-                Text(prediction.phase.description,
-                    style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.3)),
+                Text(_phaseDescription(t),
+                    style: const TextStyle(
+                        color: Colors.white70, fontSize: 12, height: 1.3)),
               ],
             ),
           ),
@@ -205,21 +263,29 @@ class _EmptyCycleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return LunarCard(
       gradient: AppColors.heroGradient,
       child: Column(
         children: [
           const MoonWidget(size: 90, progress: 0.05),
           const SizedBox(height: 12),
-          const Text('Log your first period to unlock predictions',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
+          Text(
+            t.isSpanish
+                ? 'Registra tu primera menstruación para desbloquear predicciones'
+                : 'Log your first period to unlock predictions',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+                color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 14),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white, foregroundColor: AppColors.deepPurple),
             onPressed: onLogToday,
-            child: const Text('My period started today'),
+            child: Text(t.isSpanish
+                ? 'Mi menstruación empezó hoy'
+                : 'My period started today'),
           ),
         ],
       ),
