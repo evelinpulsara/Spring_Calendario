@@ -40,3 +40,22 @@ class PregnancyRiskCalculator {
 
   IntimacyRiskInfo assess(IntimacyEntry entry, CycleProjection projection, DateTime today) {
     final day = AppDateUtils.dateOnly(entry.date);
+    final fertile = projection.fertileDays.contains(day);
+    final ovulation = projection.ovulationDays.contains(day);
+
+    final PregnancyRisk risk;
+    if (fertile || ovulation) {
+      risk = entry.protection.isUnprotected ? PregnancyRisk.high : PregnancyRisk.moderate;
+    } else {
+      risk = PregnancyRisk.low;
+    }
+
+    return IntimacyRiskInfo(
+      entry: entry,
+      risk: risk,
+      inFertileWindow: fertile || ovulation,
+      isOvulationDay: ovulation,
+      daysAgo: AppDateUtils.daysBetween(day, AppDateUtils.dateOnly(today)),
+    );
+  }
+}
