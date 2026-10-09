@@ -10,3 +10,16 @@ class InMemoryIntimacyRepository implements IntimacyRepository {
   Future<List<IntimacyEntry>> getAll() async =>
       _byDate.values.toList()..sort((a, b) => a.date.compareTo(b.date));
 
+  @override
+  Future<void> save(IntimacyEntry entry) async {
+    _byDate[AppDateUtils.dateOnly(entry.date)] = entry;
+  }
+
+  @override
+  Future<void> deleteForDate(DateTime date) async {
+    _byDate.remove(AppDateUtils.dateOnly(date));
+  }
+
+  @override
+  Future<void> clear() async => _byDate.clear();
+}
