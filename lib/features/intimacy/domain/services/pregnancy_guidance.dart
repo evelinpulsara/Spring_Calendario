@@ -24,3 +24,29 @@ class PregnancyGuidance {
   }
 
   static String message(IntimacyRiskInfo info) {
+    final when = PregnancyGuidance.when(info.daysAgo);
+    final day = info.isOvulationDay
+        ? AppLanguage.tr('en tu día de ovulación estimado', 'on your estimated ovulation day')
+        : AppLanguage.tr('durante tu ventana fértil estimada', 'during your estimated fertile window');
+
+    switch (info.risk) {
+      case PregnancyRisk.high:
+        if (info.withinEmergencyWindow) {
+          return AppLanguage.tr(
+            'Registraste una relación sin protección $when $day. Si no buscas un embarazo, '
+                'puedes considerar la pastilla anticonceptiva de emergencia: es más eficaz cuanto antes '
+                'se tome (idealmente en las primeras 72 horas, y algunas opciones funcionan hasta 5 días). '
+                'Puedes pedirla en una farmacia o centro de salud. Si tu menstruación se retrasa más de '
+                'una semana, hazte una prueba de embarazo.',
+            'You logged unprotected sex $when $day. If you are not trying to get pregnant, you can '
+                'consider the emergency contraceptive pill: it works best the sooner it is taken '
+                '(ideally within 72 hours, and some options work up to 5 days). You can get it at a '
+                'pharmacy or health center. If your period is more than a week late, take a pregnancy test.',
+          );
+        }
+        return AppLanguage.tr(
+          'Registraste una relación sin protección $when $day. Ya pasaron más de 5 días, así que la '
+              'pastilla de emergencia podría no ser eficaz. Si tu menstruación se retrasa, hazte una '
+              'prueba de embarazo y consulta a un profesional de salud.',
+          'You logged unprotected sex $when $day. More than 5 days have passed, so the emergency pill '
+              'may no longer work. If your period is late, take a pregnancy test and talk to a health professional.',
