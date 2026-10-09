@@ -50,3 +50,26 @@ class PregnancyGuidance {
               'prueba de embarazo y consulta a un profesional de salud.',
           'You logged unprotected sex $when $day. More than 5 days have passed, so the emergency pill '
               'may no longer work. If your period is late, take a pregnancy test and talk to a health professional.',
+        );
+      case PregnancyRisk.moderate:
+        return AppLanguage.tr(
+          'Registraste una relación con protección $when $day. El riesgo es bajo, pero si el condón '
+              'se rompió o olvidaste tu anticonceptivo, considera la pastilla de emergencia lo antes posible.',
+          'You logged protected sex $when $day. The risk is low, but if the condom broke or you missed '
+              'your birth control, consider the emergency pill as soon as possible.',
+        );
+      case PregnancyRisk.low:
+        return AppLanguage.tr(
+          'Tu relación de $when fue fuera de tu ventana fértil estimada, así que el riesgo es bajo. '
+              'Recuerda que es una estimación: los ciclos pueden variar.',
+          'Your intimacy $when was outside your estimated fertile window, so the risk is low. '
+              'Remember this is an estimate: cycles can vary.',
+        );
+    }
+  }
+
+  static String get disclaimer => AppLanguage.tr(
+        'Estimación según tu calendario. No es un método anticonceptivo ni un diagnóstico.',
+        'Estimate based on your calendar. Not a birth control method or a diagnosis.',
+      );
+}
