@@ -24,3 +24,30 @@ class IntimacyController extends ChangeNotifier {
 
   bool hasEntry(DateTime date) => _byDate.containsKey(AppDateUtils.dateOnly(date));
 
+  Future<void> load() async {
+    final all = await _repository.getAll();
+    _byDate
+      ..clear()
+      ..addEntries(all.map((e) => MapEntry(AppDateUtils.dateOnly(e.date), e)));
+    notifyListeners();
+  }
+
+  Future<void> save(DateTime date, ProtectionType protection) async {
+    final day = AppDateUtils.dateOnly(date);
+    await _repository.save(IntimacyEntry(
+      id: 'intimacy-${day.millisecondsSinceEpoch}',
+      date: day,
+      protection: protection,
+    ));
+    await load();
+  }
+
+  Future<void> remove(DateTime date) async {
+    await _repository.deleteForDate(date);
+    await load();
+  }
+
+  Future<void> clearData() async {
+    await _repository.clear();
+    await load();
+  }
