@@ -20,3 +20,25 @@ extension ProtectionTypeVisuals on ProtectionType {
 }
 
 extension PregnancyRiskVisuals on PregnancyRisk {
+  String get label {
+    switch (this) {
+      case PregnancyRisk.high:
+        return AppLanguage.tr('Riesgo alto', 'High risk');
+      case PregnancyRisk.moderate:
+        return AppLanguage.tr('Riesgo moderado', 'Moderate risk');
+      case PregnancyRisk.low:
+        return AppLanguage.tr('Riesgo bajo', 'Low risk');
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case PregnancyRisk.high:
+        return AppColors.deepPink;
+      case PregnancyRisk.moderate:
+        return AppColors.purple;
+      case PregnancyRisk.low:
+        return AppColors.textMuted;
+    }
+  }
+}
