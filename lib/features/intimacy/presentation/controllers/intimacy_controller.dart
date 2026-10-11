@@ -51,3 +51,26 @@ class IntimacyController extends ChangeNotifier {
     await _repository.clear();
     await load();
   }
+
+  IntimacyRiskInfo? riskFor(DateTime date, CycleProjection projection) {
+    final entry = entryFor(date);
+    if (entry == null) return null;
+    return _riskCalculator.assess(entry, projection, AppDateUtils.today());
+  }
+
+  /// Riesgo de todas las relaciones (más recientes primero).
+  List<IntimacyRiskInfo> riskReport(CycleProjection projection) {
+    final today = AppDateUtils.today();
+    return entries.reversed
+        .map((e) => _riskCalculator.assess(e, projection, today))
+        .toList();
+  }
+
+  /// La relación más reciente que necesita atención (riesgo alto, ≤ 5 días).
+  IntimacyRiskInfo? urgentRisk(CycleProjection projection) {
+    for (final info in riskReport(projection)) {
+      if (info.needsAttention) return info;
+    }
+    return null;
+  }
+}
