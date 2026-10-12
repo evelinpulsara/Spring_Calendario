@@ -30,3 +30,35 @@ class PregnancyRiskCard extends StatelessWidget {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(color: color.withAlpha(40), shape: BoxShape.circle),
                 child: Icon(
+                  info.risk == PregnancyRisk.high ? Icons.favorite_rounded : Icons.info_rounded,
+                  color: color,
+                  size: compact ? 18 : 22,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              // Título y etiqueta se acomodan en dos líneas si no hay espacio.
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    PregnancyGuidance.title(info),
+                    style: TextStyle(fontSize: compact ? 15 : 17, fontWeight: FontWeight.w800),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: color.withAlpha(35),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(info.risk.label,
+                        style:
+                            TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w700)),
+                  ),
+                ],
+              ),
+            ),
+          ],
