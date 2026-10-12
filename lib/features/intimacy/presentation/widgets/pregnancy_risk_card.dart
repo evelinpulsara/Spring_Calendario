@@ -94,3 +94,35 @@ class PregnancyRiskCard extends StatelessWidget {
     );
 
     if (compact) return content;
+    return SpringCard(
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border(left: BorderSide(color: color, width: 4)),
+        ),
+        padding: const EdgeInsets.only(left: 12),
+        child: content,
+      ),
+    );
+  }
+
+  static String _timeLeft(int daysAgo) {
+    if (daysAgo <= 0) {
+      return AppLanguage.tr(
+        'Fue hoy: estás dentro de las primeras 72 horas, el mejor momento para actuar.',
+        'It was today: you are within the first 72 hours, the best time to act.',
+      );
+    }
+    final hoursLeft72 = 72 - daysAgo * 24;
+    if (hoursLeft72 > 0) {
+      return AppLanguage.tr(
+        'Aún estás dentro de las primeras 72 horas (quedan aprox. $hoursLeft72 h).',
+        'You are still within the first 72 hours (about $hoursLeft72 h left).',
+      );
+    }
+    final daysLeft = 5 - daysAgo;
+    return AppLanguage.tr(
+      'Pasaron las 72 h, pero algunas opciones funcionan hasta 5 días (queda${daysLeft == 1 ? '' : 'n'} $daysLeft día${daysLeft == 1 ? '' : 's'}).',
+      '72 h have passed, but some options work up to 5 days ($daysLeft day${daysLeft == 1 ? '' : 's'} left).',
+    );
+  }
+}
