@@ -62,3 +62,35 @@ class PregnancyRiskCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 10),
+        Text(PregnancyGuidance.message(info), style: const TextStyle(height: 1.45)),
+        if (info.needsAttention && !compact) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isLight ? AppColors.lavenderSoft : AppColors.night,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.schedule_rounded, color: AppColors.deepPurple, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _timeLeft(info.daysAgo),
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+        const SizedBox(height: 8),
+        Text(PregnancyGuidance.disclaimer,
+            style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+      ],
+    );
+
+    if (compact) return content;
