@@ -40,3 +40,45 @@ Future<void> showIntimacySheet(BuildContext context, DateTime date) {
 
 class _IntimacySheet extends StatefulWidget {
   const _IntimacySheet({required this.date});
+
+  final DateTime date;
+
+  @override
+  State<_IntimacySheet> createState() => _IntimacySheetState();
+}
+
+class _IntimacySheetState extends State<_IntimacySheet> {
+  late ProtectionType? _selected =
+      context.read<IntimacyController>().entryFor(widget.date)?.protection;
+
+  Future<void> _save() async {
+    final protection = _selected;
+    if (protection == null) return;
+    final intimacy = context.read<IntimacyController>();
+    final projection = context.read<CycleController>().projection;
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    await intimacy.save(widget.date, protection);
+    navigator.pop();
+
+    final risk = intimacy.riskFor(widget.date, projection);
+    messenger.showSnackBar(SnackBar(
+      content: Text(risk != null && risk.risk == PregnancyRisk.high
+          ? AppLanguage.tr(
+              'Guardado. Revisa el aviso en Inicio.', 'Saved. Check the notice on Home.')
+          : AppLanguage.tr('Registro guardado', 'Entry saved')),
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final existing = context.watch<IntimacyController>().entryFor(widget.date);
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(22, 0, 22, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
