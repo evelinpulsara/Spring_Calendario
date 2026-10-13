@@ -82,3 +82,56 @@ class _IntimacySheetState extends State<_IntimacySheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              children: [
+                const GentlePulse(
+                  child: Icon(Icons.favorite_rounded, color: AppColors.deepPink, size: 28),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    AppLanguage.tr('Relación sexual', 'Sexual activity'),
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(AppDateUtils.longDate(widget.date),
+                style: const TextStyle(color: AppColors.textMuted)),
+            const SizedBox(height: 18),
+            Text(
+              AppLanguage.tr('¿Usaron protección?', 'Did you use protection?'),
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 10),
+            ...staggered(
+              [
+                for (final type in ProtectionType.values)
+                  _ProtectionOption(
+                    type: type,
+                    selected: _selected == type,
+                    onTap: () => setState(() => _selected = type),
+                  ),
+              ],
+              step: const Duration(milliseconds: 50),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.lock_rounded, size: 14, color: AppColors.textMuted),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    '${AppLanguage.tr('Es privado: se guarda en tu dispositivo.', 'Private: saved on your device.')} '
+                    '${PregnancyGuidance.disclaimer}',
+                    style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _selected == null ? null : _save,
+                icon: const Icon(Icons.check_rounded),
