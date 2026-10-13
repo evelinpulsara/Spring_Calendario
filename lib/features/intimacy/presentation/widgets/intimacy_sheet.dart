@@ -135,3 +135,45 @@ class _IntimacySheetState extends State<_IntimacySheet> {
               child: ElevatedButton.icon(
                 onPressed: _selected == null ? null : _save,
                 icon: const Icon(Icons.check_rounded),
+                label: Text(AppLanguage.tr('Guardar', 'Save')),
+              ),
+            ),
+            if (existing != null) ...[
+              const SizedBox(height: 6),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton.icon(
+                  onPressed: () async {
+                    final navigator = Navigator.of(context);
+                    await context.read<IntimacyController>().remove(widget.date);
+                    navigator.pop();
+                  },
+                  icon: const Icon(Icons.delete_outline_rounded),
+                  label: Text(AppLanguage.tr('Quitar este registro', 'Remove this entry')),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProtectionOption extends StatelessWidget {
+  const _ProtectionOption({required this.type, required this.selected, required this.onTap});
+
+  final ProtectionType type;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    return PressableScale(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
+          margin: const EdgeInsets.only(bottom: 8),
