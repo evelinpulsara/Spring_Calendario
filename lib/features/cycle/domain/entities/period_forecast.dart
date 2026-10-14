@@ -12,3 +12,17 @@ class PeriodForecast {
   });
 
   final DateTime earliestStart;
+  final DateTime likelyStart;
+  final DateTime latestStart;
+  final int periodLength;
+  final DateTime ovulationDate;
+
+  /// low, medium o high.
+  final String confidence;
+  final String explanation;
+
+  /// Modelo de IA que hizo la predicción; null = cálculo local.
+  final String? model;
+
+  bool get isFromAi => model != null;
+}
