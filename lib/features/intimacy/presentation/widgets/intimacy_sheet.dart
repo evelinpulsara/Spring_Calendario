@@ -177,3 +177,35 @@ class _ProtectionOption extends StatelessWidget {
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOut,
           margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: selected
+                ? AppColors.purple.withAlpha(isLight ? 40 : 90)
+                : (isLight ? AppColors.lavenderSoft : AppColors.night),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: selected ? AppColors.purple : Colors.transparent,
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(type.icon,
+                  color: type == ProtectionType.none ? AppColors.deepPink : AppColors.purple),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(type.label, style: const TextStyle(fontWeight: FontWeight.w600)),
+              ),
+              AnimatedScale(
+                scale: selected ? 1 : 0,
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutBack,
+                child: const Icon(Icons.check_circle_rounded, color: AppColors.purple),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
