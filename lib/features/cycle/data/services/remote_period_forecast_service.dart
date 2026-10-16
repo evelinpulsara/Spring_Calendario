@@ -61,3 +61,31 @@ class RemotePeriodForecastService implements PeriodForecastService {
     }
   }
 
+  static String _day(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  /// Datos que se envían al backend (sin nombre ni correo).
+  static Map<String, dynamic> buildRequestBody(ForecastInput input) => {
+        'language': AppLanguage.isSpanish ? 'es' : 'en',
+        'today': _day(input.today),
+        'profile': {
+          'ageGroup': input.ageGroup.name,
+          'regularity': input.regularity.name,
+          'typicalPeriodLength': input.typicalPeriodLength,
+          'typicalCycleLength': input.typicalCycleLength,
+        },
+        'cycles': [
+          for (final c in input.cycles)
+            {
+              'startDate': _day(c.startDate),
+              'periodLength': c.periodLength,
+              'cycleLength': c.cycleLength,
+            },
+        ],
+        'baseline': {
+          'nextStart': _day(input.baseline.nextPeriodStart),
+          'periodLength': input.expectedPeriodLength,
+          'ovulation': _day(AppDateUtils.addDays(input.baseline.nextPeriodStart, -14)),
+        },
+      };
+}
