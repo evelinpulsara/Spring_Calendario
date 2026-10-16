@@ -29,3 +29,35 @@ class RemotePeriodForecastService implements PeriodForecastService {
   final Duration _timeout;
 
   /// Headers de cada llamada (incluye el token de sesión).
+  final Map<String, String> Function() _headers;
+
+  @override
+  Future<PeriodForecast> forecast(ForecastInput input) async {
+    try {
+      final response = await _client
+          .post(
+            Uri.parse('$_baseUrl/api/ai/prediction'),
+            headers: _headers(),
+            body: jsonEncode(buildRequestBody(input)),
+          )
+          .timeout(_timeout);
+      if (response.statusCode != 200) {
+        throw Exception('Backend respondió ${response.statusCode}: ${response.body}');
+      }
+      final json = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+      return PeriodForecast(
+        earliestStart: DateTime.parse(json['earliestStart'] as String),
+        likelyStart: DateTime.parse(json['likelyStart'] as String),
+        latestStart: DateTime.parse(json['latestStart'] as String),
+        periodLength: (json['periodLength'] as num).toInt(),
+        ovulationDate: DateTime.parse(json['ovulationDate'] as String),
+        confidence: json['confidence'] as String? ?? 'medium',
+        explanation: json['explanation'] as String? ?? '',
+        model: json['model'] as String? ?? 'gemini',
+      );
+    } catch (error) {
+      debugPrint('Predicción: se usa el cálculo local ($error)');
+      return _fallback.forecast(input);
+    }
+  }
+
