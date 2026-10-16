@@ -39,3 +39,44 @@ class ForecastCard extends StatelessWidget {
                 icon: cycle.isForecasting
                     ? const SizedBox(
                         width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.refresh_rounded),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 400),
+            transitionBuilder: (child, a) => FadeTransition(
+              opacity: a,
+              child: SlideTransition(
+                position: Tween(begin: const Offset(0, 0.06), end: Offset.zero).animate(a),
+                child: child,
+              ),
+            ),
+            child: _ForecastBody(
+              key: ValueKey('${forecast.likelyStart}-${forecast.model}-${forecast.earliestStart}'),
+              forecast: forecast,
+              isLight: isLight,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ForecastBody extends StatelessWidget {
+  const _ForecastBody({super.key, required this.forecast, required this.isLight});
+
+  final PeriodForecast forecast;
+  final bool isLight;
+
+  String get _confidenceLabel {
+    switch (forecast.confidence) {
+      case 'high':
+        return AppLanguage.tr('Confianza alta', 'High confidence');
+      case 'low':
+        return AppLanguage.tr('Confianza baja', 'Low confidence');
+      default:
+        return AppLanguage.tr('Confianza media', 'Medium confidence');
+    }
