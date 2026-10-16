@@ -16,3 +16,21 @@ class ApiCycleRepository implements CycleRepository {
       for (final j in list.cast<Map<String, dynamic>>())
         PeriodEntry(
           id: 'period-${j['date']}',
+          date: DateTime.parse(j['date'] as String),
+          flow: FlowIntensity.values.asNameMap()[j['flow']] ?? FlowIntensity.medium,
+        ),
+    ];
+  }
+
+  @override
+  Future<void> savePeriodEntry(PeriodEntry entry) =>
+      _api.put('/api/period-days/${ApiClient.date(entry.date)}', {'flow': entry.flow.name});
+
+  @override
+  Future<void> deletePeriodEntry(DateTime date) =>
+      _api.delete('/api/period-days/${ApiClient.date(date)}');
+
+  /// Borra todos los registros de la usuaria (periodo, síntomas y relaciones).
+  @override
+  Future<void> clear() => _api.delete('/api/me/data');
+}
