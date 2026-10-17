@@ -131,3 +131,44 @@ class _ForecastBody extends StatelessWidget {
                 offsetY: 8,
                 child: _DayPill(
                   date: days[i],
+                  likely: AppDateUtils.isSameDay(days[i], f.likelyStart),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            info(Icons.water_drop_rounded, AppLanguage.tr('Duración probable', 'Likely length'),
+                AppLanguage.tr('${f.periodLength} días', '${f.periodLength} days')),
+            const SizedBox(width: 8),
+            info(Icons.brightness_2_rounded, AppLanguage.tr('Ovulación', 'Ovulation'),
+                AppDateUtils.shortDate(f.ovulationDate)),
+            const SizedBox(width: 8),
+            info(Icons.verified_rounded, AppLanguage.tr('Predicción', 'Forecast'),
+                _confidenceLabel),
+          ],
+        ),
+        if (f.explanation.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Text(f.explanation, style: const TextStyle(height: 1.4)),
+        ],
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Icon(f.isFromAi ? Icons.auto_awesome_rounded : Icons.calculate_rounded,
+                size: 14, color: AppColors.textMuted),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                f.isFromAi
+                    ? AppLanguage.tr('Predicción con IA (${f.model})', 'AI forecast (${f.model})')
+                    : AppLanguage.tr('Cálculo local (la IA no está disponible)',
+                        'Local estimate (AI not available)'),
+                style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
