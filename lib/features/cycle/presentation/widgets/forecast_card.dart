@@ -80,3 +80,54 @@ class _ForecastBody extends StatelessWidget {
       default:
         return AppLanguage.tr('Confianza media', 'Medium confidence');
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final f = forecast;
+    final sameDay = AppDateUtils.isSameDay(f.earliestStart, f.latestStart);
+    final days = <DateTime>[
+      for (var d = f.earliestStart; !d.isAfter(f.latestStart); d = AppDateUtils.addDays(d, 1)) d,
+    ];
+
+    Widget info(IconData icon, String label, String value) => Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: isLight ? AppColors.lavenderSoft : AppColors.night,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(icon, size: 18, color: AppColors.purple),
+                const SizedBox(height: 6),
+                Text(value, style: const TextStyle(fontWeight: FontWeight.w800)),
+                Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+              ],
+            ),
+          ),
+        );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          sameDay
+              ? AppDateUtils.longDate(f.likelyStart)
+              : AppDateUtils.range(f.earliestStart, f.latestStart),
+          style: const TextStyle(
+              fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.deepPink),
+        ),
+        const SizedBox(height: 8),
+        // Días posibles de inicio; el más probable resaltado.
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            for (var i = 0; i < days.length; i++)
+              FadeSlideIn(
+                delay: Duration(milliseconds: 60 * i),
+                offsetY: 8,
+                child: _DayPill(
+                  date: days[i],
