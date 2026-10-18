@@ -61,3 +61,66 @@ class _CycleSetupScreenState extends State<CycleSetupScreen> {
         if (loaded.isNotEmpty) setState(() => _lastStart = loaded.last.startDate);
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _pages.dispose();
+    super.dispose();
+  }
+
+  void _go(int step) {
+    setState(() => _step = step);
+    _pages.animateToPage(step,
+        duration: const Duration(milliseconds: 380), curve: Curves.easeOutCubic);
+  }
+
+  Future<void> _finish() async {
+    final session = context.read<SessionController>();
+    final cycle = context.read<CycleController>();
+    final navigator = Navigator.of(context);
+    final user = session.user;
+    setState(() => _saving = true);
+
+    if (user != null) {
+      await session.updateProfile(user.copyWith(
+        ageGroup: _ageGroup,
+        averagePeriodDuration: _periodLength,
+        averageCycleLength: _cycleUnknown ? 28 : _cycleLength,
+        regularity: _regularity,
+        cycleSetupCompleted: true,
+      ));
+    }
+    final start = _lastStart;
+    if (start != null && !_lastStartUnknown) {
+      await cycle.addPeriodDays(start, _periodLength);
+    } else {
+      await cycle.load();
+    }
+
+    if (!mounted) return;
+    if (widget.isEditing && navigator.canPop()) {
+      navigator.pop();
+    } else {
+      navigator.pushNamedAndRemoveUntil(AppRoutes.home, (_) => false);
+    }
+  }
+
+  bool get _canContinue {
+    switch (_step) {
+      case 0:
+        return _ageGroup != AgeGroup.unknown;
+      case 4:
+        return _lastStart != null || _lastStartUnknown;
+      default:
+        return true;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final last = _step == _steps - 1;
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: widget.isEditing,
+        title: Text(AppLanguage.tr('Conozcamos tu ciclo', 'Let’s get to know your cycle')),
