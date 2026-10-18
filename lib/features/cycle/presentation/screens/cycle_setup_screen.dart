@@ -124,3 +124,66 @@ class _CycleSetupScreenState extends State<CycleSetupScreen> {
       appBar: AppBar(
         automaticallyImplyLeading: widget.isEditing,
         title: Text(AppLanguage.tr('Conozcamos tu ciclo', 'Let’s get to know your cycle')),
+      ),
+      body: SoftBackground(
+        child: SafeArea(
+          child: CenteredContent(
+            maxWidth: 560,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+              child: Column(
+                children: [
+                  _Progress(step: _step, total: _steps),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: PageView(
+                      controller: _pages,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        _ageStep(),
+                        _periodStep(),
+                        _cycleStep(),
+                        _regularityStep(),
+                        _lastPeriodStep(),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      if (_step > 0)
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: _saving ? null : () => _go(_step - 1),
+                            child: Text(AppLanguage.tr('Atrás', 'Back')),
+                          ),
+                        ),
+                      if (_step > 0) const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton.icon(
+                          onPressed: !_canContinue || _saving
+                              ? null
+                              : () => last ? _finish() : _go(_step + 1),
+                          icon: _saving
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: Colors.white))
+                              : Icon(last ? Icons.auto_awesome_rounded : Icons.arrow_forward_rounded),
+                          label: Text(last
+                              ? AppLanguage.tr('Ver mi predicción', 'See my prediction')
+                              : AppLanguage.tr('Continuar', 'Continue')),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
