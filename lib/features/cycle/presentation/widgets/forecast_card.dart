@@ -172,3 +172,34 @@ class _ForecastBody extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class _DayPill extends StatelessWidget {
+  const _DayPill({required this.date, required this.likely});
+
+  final DateTime date;
+  final bool likely;
+
+  @override
+  Widget build(BuildContext context) {
+    final pill = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: likely ? AppColors.deepPink : AppColors.softPink.withAlpha(150),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        likely
+            ? '${AppDateUtils.shortDate(date)} · ${AppLanguage.tr('más probable', 'most likely')}'
+            : AppDateUtils.shortDate(date),
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: likely ? Colors.white : AppColors.deepPurple,
+        ),
+      ),
+    );
+    return likely ? GentlePulse(child: pill) : pill;
+  }
+}
