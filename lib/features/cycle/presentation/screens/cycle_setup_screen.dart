@@ -187,3 +187,66 @@ class _CycleSetupScreenState extends State<CycleSetupScreen> {
       ),
     );
   }
+
+  // ── Paso 1: edad ─────────────────────────────────────────────────────────
+  Widget _ageStep() => _StepScaffold(
+        icon: const MoonWidget(size: 64, progress: 0.2),
+        title: AppLanguage.tr('¿En qué etapa estás?', 'Which stage are you in?'),
+        subtitle: AppLanguage.tr(
+          'En la adolescencia los ciclos suelen variar más, así que ajustamos la predicción.',
+          'Cycles vary more during adolescence, so we adjust the prediction.',
+        ),
+        children: [
+          _OptionTile(
+            icon: Icons.face_retouching_natural,
+            title: AppLanguage.tr('Adolescente', 'Teen'),
+            subtitle: AppLanguage.tr('Menos de 18 años · ciclos de 21 a 45 días son normales',
+                'Under 18 · cycles of 21 to 45 days are normal'),
+            selected: _ageGroup == AgeGroup.teen,
+            onTap: () => setState(() => _ageGroup = AgeGroup.teen),
+          ),
+          _OptionTile(
+            icon: Icons.person_rounded,
+            title: AppLanguage.tr('Adulta', 'Adult'),
+            subtitle: AppLanguage.tr('18 años o más · lo habitual son ciclos de 24 a 38 días',
+                '18 or older · cycles of 24 to 38 days are typical'),
+            selected: _ageGroup == AgeGroup.adult,
+            onTap: () => setState(() => _ageGroup = AgeGroup.adult),
+          ),
+        ],
+      );
+
+  // ── Paso 2: duración del periodo ─────────────────────────────────────────
+  Widget _periodStep() => _StepScaffold(
+        icon: const Icon(Icons.water_drop_rounded, size: 56, color: AppColors.deepPink),
+        title: AppLanguage.tr('¿Cuántos días dura tu periodo?', 'How many days does your period last?'),
+        subtitle: AppLanguage.tr(
+          'Cuenta desde el primer día de sangrado hasta el último. Lo más común es entre 3 y 7 días.',
+          'Count from the first to the last day of bleeding. Most commonly 3 to 7 days.',
+        ),
+        children: [
+          _NumberPicker(
+            value: _periodLength,
+            min: 1,
+            max: 10,
+            unit: AppLanguage.tr('días', 'days'),
+            onChanged: (v) => setState(() => _periodLength = v),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final d in [3, 4, 5, 6, 7, 8])
+                ChoiceChip(
+                  label: Text('$d'),
+                  selected: _periodLength == d,
+                  selectedColor: AppColors.softPink,
+                  onSelected: (_) => setState(() => _periodLength = d),
+                ),
+              ActionChip(
+                label: Text(AppLanguage.tr('No estoy segura (5)', 'Not sure (5)')),
+                onPressed: () => setState(() => _periodLength = 5),
+              ),
+            ],
