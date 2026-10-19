@@ -250,3 +250,67 @@ class _CycleSetupScreenState extends State<CycleSetupScreen> {
                 onPressed: () => setState(() => _periodLength = 5),
               ),
             ],
+          ),
+          if (_periodLength > 7)
+            _Note(AppLanguage.tr(
+              'Un sangrado de más de 7–8 días es poco común. Si te pasa seguido, coméntalo con un profesional de salud.',
+              'Bleeding for more than 7–8 days is uncommon. If it happens often, talk to a health professional.',
+            )),
+          if (_periodLength < 2)
+            _Note(AppLanguage.tr(
+              'Un periodo de 1 día es poco común; si es tu caso, está bien registrarlo así.',
+              'A 1-day period is uncommon; if that is your case, it is fine to log it.',
+            )),
+        ],
+      );
+
+  // ── Paso 3: duración del ciclo ───────────────────────────────────────────
+  Widget _cycleStep() {
+    final teen = _ageGroup == AgeGroup.teen;
+    final min = teen ? 21 : 24;
+    final max = teen ? 45 : 38;
+    final outOfRange = !_cycleUnknown && (_cycleLength < min || _cycleLength > max);
+    return _StepScaffold(
+      icon: const Icon(Icons.loop_rounded, size: 56, color: AppColors.purple),
+      title: AppLanguage.tr('¿Cada cuántos días te llega?', 'How often does it come?'),
+      subtitle: AppLanguage.tr(
+        'Días desde el inicio de un periodo hasta el inicio del siguiente. '
+            '${teen ? 'En la adolescencia, entre 21 y 45 días es normal.' : 'Lo habitual en adultas es entre 24 y 38 días (unos 28 en promedio).'}',
+        'Days from the start of one period to the start of the next. '
+            '${teen ? 'For teens, 21 to 45 days is normal.' : 'For adults, 24 to 38 days is typical (about 28 on average).'}',
+      ),
+      children: [
+        AnimatedOpacity(
+          opacity: _cycleUnknown ? 0.35 : 1,
+          duration: const Duration(milliseconds: 200),
+          child: IgnorePointer(
+            ignoring: _cycleUnknown,
+            child: Column(
+              children: [
+                _BigValue(value: _cycleLength, unit: AppLanguage.tr('días', 'days')),
+                Slider(
+                  value: _cycleLength.toDouble(),
+                  min: 20,
+                  max: 45,
+                  divisions: 25,
+                  label: '$_cycleLength',
+                  onChanged: (v) => setState(() => _cycleLength = v.round()),
+                ),
+              ],
+            ),
+          ),
+        ),
+        CheckboxListTile(
+          value: _cycleUnknown,
+          onChanged: (v) => setState(() => _cycleUnknown = v ?? false),
+          title: Text(AppLanguage.tr('No lo sé (usar 28 días)', 'I don’t know (use 28 days)')),
+          controlAffinity: ListTileControlAffinity.leading,
+          contentPadding: EdgeInsets.zero,
+        ),
+        if (outOfRange)
+          _Note(AppLanguage.tr(
+            'Está fuera del rango habitual ($min–$max días). La app lo tendrá en cuenta; si se repite, puedes comentarlo con un profesional.',
+            'This is outside the usual range ($min–$max days). The app will take it into account; if it keeps happening, you can talk to a professional.',
+          )),
+      ],
+    );
