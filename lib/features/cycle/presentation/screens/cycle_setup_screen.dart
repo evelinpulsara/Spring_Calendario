@@ -314,3 +314,66 @@ class _CycleSetupScreenState extends State<CycleSetupScreen> {
           )),
       ],
     );
+  }
+
+  // ── Paso 4: regularidad ──────────────────────────────────────────────────
+  Widget _regularityStep() => _StepScaffold(
+        icon: const Icon(Icons.timeline_rounded, size: 56, color: AppColors.purple),
+        title: AppLanguage.tr('¿Tu ciclo es regular?', 'Is your cycle regular?'),
+        subtitle: AppLanguage.tr(
+          'Si varía mucho, la predicción mostrará más días posibles de inicio.',
+          'If it varies a lot, the prediction will show more possible start days.',
+        ),
+        children: [
+          _OptionTile(
+            icon: Icons.check_circle_outline_rounded,
+            title: AppLanguage.tr('Sí, bastante regular', 'Yes, fairly regular'),
+            subtitle: AppLanguage.tr('Me llega más o menos en la misma fecha (±1–3 días)',
+                'It comes around the same date (±1–3 days)'),
+            selected: _regularity == CycleRegularity.regular,
+            onTap: () => setState(() => _regularity = CycleRegularity.regular),
+          ),
+          _OptionTile(
+            icon: Icons.shuffle_rounded,
+            title: AppLanguage.tr('No, es irregular', 'No, it’s irregular'),
+            subtitle: AppLanguage.tr('A veces se adelanta o se atrasa varios días',
+                'Sometimes it comes several days early or late'),
+            selected: _regularity == CycleRegularity.irregular,
+            onTap: () => setState(() => _regularity = CycleRegularity.irregular),
+          ),
+          _OptionTile(
+            icon: Icons.help_outline_rounded,
+            title: AppLanguage.tr('No estoy segura', 'I’m not sure'),
+            subtitle: AppLanguage.tr('Lo iremos aprendiendo con tus registros',
+                'We’ll learn it from your logs'),
+            selected: _regularity == CycleRegularity.unsure,
+            onTap: () => setState(() => _regularity = CycleRegularity.unsure),
+          ),
+        ],
+      );
+
+  // ── Paso 5: última menstruación ──────────────────────────────────────────
+  Widget _lastPeriodStep() {
+    final today = AppDateUtils.today();
+    return _StepScaffold(
+      icon: const Icon(Icons.event_rounded, size: 56, color: AppColors.deepPink),
+      title: AppLanguage.tr('¿Cuándo empezó tu última menstruación?',
+          'When did your last period start?'),
+      subtitle: AppLanguage.tr('Elige el primer día de sangrado.', 'Pick the first day of bleeding.'),
+      children: [
+        AnimatedOpacity(
+          opacity: _lastStartUnknown ? 0.35 : 1,
+          duration: const Duration(milliseconds: 200),
+          child: IgnorePointer(
+            ignoring: _lastStartUnknown,
+            child: SpringCard(
+              padding: const EdgeInsets.all(4),
+              child: CalendarDatePicker(
+                initialDate: _lastStart ?? today,
+                firstDate: AppDateUtils.addDays(today, -120),
+                lastDate: today,
+                onDateChanged: (d) => setState(() => _lastStart = AppDateUtils.dateOnly(d)),
+              ),
+            ),
+          ),
+        ),
