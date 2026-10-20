@@ -440,3 +440,66 @@ class _Progress extends StatelessWidget {
 class _StepScaffold extends StatelessWidget {
   const _StepScaffold({
     required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.children,
+  });
+
+  final Widget icon;
+  final String title;
+  final String subtitle;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      children: staggered([
+        Center(child: icon),
+        const SizedBox(height: 14),
+        Text(title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
+        const SizedBox(height: 8),
+        Text(subtitle,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.textMuted, height: 1.4)),
+        const SizedBox(height: 20),
+        ...children,
+      ], step: const Duration(milliseconds: 50)),
+    );
+  }
+}
+
+class _OptionTile extends StatelessWidget {
+  const _OptionTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    return PressableScale(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: selected
+                  ? AppColors.purple.withAlpha(isLight ? 40 : 90)
+                  : (isLight ? Colors.white : AppColors.darkSurface),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
