@@ -377,3 +377,66 @@ class _CycleSetupScreenState extends State<CycleSetupScreen> {
             ),
           ),
         ),
+        if (_lastStart != null && !_lastStartUnknown)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(
+              '${AppLanguage.tr('Seleccionado', 'Selected')}: ${AppDateUtils.longDate(_lastStart!)}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.deepPurple),
+            ),
+          ),
+        CheckboxListTile(
+          value: _lastStartUnknown,
+          onChanged: (v) => setState(() => _lastStartUnknown = v ?? false),
+          title: Text(AppLanguage.tr('No lo recuerdo', 'I don’t remember')),
+          subtitle: Text(AppLanguage.tr(
+              'Podrás marcarlo en el calendario cuando te llegue.',
+              'You can mark it on the calendar when it comes.')),
+          controlAffinity: ListTileControlAffinity.leading,
+          contentPadding: EdgeInsets.zero,
+        ),
+      ],
+    );
+  }
+}
+
+// ── Piezas visuales ──────────────────────────────────────────────────────────
+
+class _Progress extends StatelessWidget {
+  const _Progress({required this.step, required this.total});
+
+  final int step;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(end: (step + 1) / total),
+            duration: const Duration(milliseconds: 380),
+            curve: Curves.easeOutCubic,
+            builder: (context, v, _) => LinearProgressIndicator(
+              value: v,
+              minHeight: 8,
+              backgroundColor: AppColors.lavender,
+              valueColor: const AlwaysStoppedAnimation(AppColors.purple),
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          AppLanguage.tr('Paso ${step + 1} de $total', 'Step ${step + 1} of $total'),
+          style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+        ),
+      ],
+    );
+  }
+}
+
+class _StepScaffold extends StatelessWidget {
+  const _StepScaffold({
+    required this.icon,
