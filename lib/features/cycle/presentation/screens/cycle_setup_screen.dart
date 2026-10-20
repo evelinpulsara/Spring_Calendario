@@ -503,3 +503,66 @@ class _OptionTile extends StatelessWidget {
                   : (isLight ? Colors.white : AppColors.darkSurface),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
+                color: selected ? AppColors.purple : AppColors.purple.withAlpha(30),
+                width: selected ? 2 : 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(icon, color: AppColors.purple, size: 28),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title,
+                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                      const SizedBox(height: 2),
+                      Text(subtitle,
+                          style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                    ],
+                  ),
+                ),
+                AnimatedScale(
+                  scale: selected ? 1 : 0,
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutBack,
+                  child: const Icon(Icons.check_circle_rounded, color: AppColors.purple),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BigValue extends StatelessWidget {
+  const _BigValue({required this.value, required this.unit});
+
+  final int value;
+  final String unit;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 180),
+          transitionBuilder: (child, a) => ScaleTransition(scale: a, child: child),
+          child: Text('$value',
+              key: ValueKey(value),
+              style: const TextStyle(
+                  fontSize: 56, fontWeight: FontWeight.w800, color: AppColors.deepPurple)),
+        ),
+        const SizedBox(width: 8),
+        Text(unit, style: const TextStyle(fontSize: 18, color: AppColors.textMuted)),
+      ],
+    );
+  }
+}
+
