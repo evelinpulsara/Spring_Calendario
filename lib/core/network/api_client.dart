@@ -32,3 +32,37 @@ class ApiClient {
   final String _baseUrl;
   String? _token;
 
+  http.Client get httpClient => _client;
+  String get baseUrl => _baseUrl;
+
+  /// Headers con el token, para otras llamadas (por ejemplo la IA).
+  Map<String, String> get authHeaders => {
+        'Content-Type': 'application/json',
+        if (_token != null) 'Authorization': 'Bearer $_token',
+      };
+
+  bool get hasToken => _token != null;
+
+  /// Recupera la sesión guardada (sobrevive a recargar la página).
+  Future<void> loadToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    _token = prefs.getString(_tokenKey);
+  }
+
+  Future<void> saveToken(String token) async {
+    _token = token;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_tokenKey, token);
+  }
+
+  Future<void> clearToken() async {
+    _token = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_tokenKey);
+  }
+
+  Future<dynamic> get(String path) => _send('GET', path);
+  Future<dynamic> post(String path, Object? body) => _send('POST', path, body);
+  Future<dynamic> put(String path, Object? body) => _send('PUT', path, body);
+  Future<dynamic> delete(String path) => _send('DELETE', path);
+
