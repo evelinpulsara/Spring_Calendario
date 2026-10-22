@@ -36,3 +36,42 @@ class ApiUserRepository implements UserRepository {
       _auth('/api/auth/register',
           {'name': name.trim(), 'email': email.trim(), 'password': password});
 
+  Future<User> _auth(String path, Map<String, String> body) async {
+    try {
+      final json = await _api.post(path, body) as Map<String, dynamic>;
+      await _api.saveToken(json['token'] as String);
+      return _current = userFromJson(json['user'] as Map<String, dynamic>);
+    } on ApiError catch (e) {
+      throw AuthException(messageFor(e));
+    }
+  }
+
+  @override
+  Future<User> updateUser(User user) async {
+    final json = await _api.put('/api/me', userToJson(user)) as Map<String, dynamic>;
+    return _current = userFromJson(json);
+  }
+
+  @override
+  Future<void> logout() async {
+    _current = null;
+    await _api.clearToken();
+  }
+
+  /// Mensaje para la usuaria según el código de error del backend.
+  static String messageFor(ApiError e) {
+    switch (e.code) {
+      case 'invalid_credentials':
+        return AppLanguage.tr('Correo o contraseña incorrectos.', 'Incorrect email or password.');
+      case 'email_taken':
+        return AppLanguage.tr(
+            'Ya existe una cuenta con este correo.', 'An account with this email already exists.');
+      case 'connection':
+      case 'timeout':
+        return AppLanguage.tr('No se pudo conectar con el servidor. Revisa tu conexión.',
+            'Could not reach the server. Check your connection.');
+      default:
+        return AppLanguage.tr('Datos no válidos. Revisa e intenta de nuevo.',
+            'Invalid data. Please check and try again.');
+    }
+  }
