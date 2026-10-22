@@ -75,3 +75,37 @@ class ApiUserRepository implements UserRepository {
             'Invalid data. Please check and try again.');
     }
   }
+
+  static User userFromJson(Map<String, dynamic> j) {
+    final n = j['notifications'] as Map<String, dynamic>? ?? const {};
+    return User(
+      id: j['id'] as String,
+      name: j['name'] as String,
+      email: j['email'] as String,
+      averageCycleLength: (j['averageCycleLength'] as num).toInt(),
+      averagePeriodDuration: (j['averagePeriodDuration'] as num).toInt(),
+      ageGroup: AgeGroup.values.asNameMap()[j['ageGroup']] ?? AgeGroup.unknown,
+      regularity: CycleRegularity.values.asNameMap()[j['regularity']] ?? CycleRegularity.unsure,
+      cycleSetupCompleted: j['cycleSetupCompleted'] as bool? ?? false,
+      notifications: NotificationPreferences(
+        periodReminders: n['periodReminders'] as bool? ?? true,
+        fertileWindowAlerts: n['fertileWindowAlerts'] as bool? ?? false,
+        dailyLogReminder: n['dailyLogReminder'] as bool? ?? true,
+      ),
+    );
+  }
+
+  static Map<String, dynamic> userToJson(User u) => {
+        'name': u.name,
+        'averageCycleLength': u.averageCycleLength,
+        'averagePeriodDuration': u.averagePeriodDuration,
+        'ageGroup': u.ageGroup.name,
+        'regularity': u.regularity.name,
+        'cycleSetupCompleted': u.cycleSetupCompleted,
+        'notifications': {
+          'periodReminders': u.notifications.periodReminders,
+          'fertileWindowAlerts': u.notifications.fertileWindowAlerts,
+          'dailyLogReminder': u.notifications.dailyLogReminder,
+        },
+      };
+}
