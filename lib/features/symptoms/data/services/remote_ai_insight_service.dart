@@ -89,3 +89,43 @@ class RemoteAiInsightService implements AiInsightService {
     required List<MenstrualCycle> cycles,
     CyclePrediction? prediction,
     List<IntimacyRiskInfo> intimacy = const [],
+  }) {
+    String day(DateTime d) =>
+        '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+    return {
+      'language': AppLanguage.isSpanish ? 'es' : 'en',
+      'symptoms': [
+        for (final s in symptoms)
+          {'date': day(s.date), 'type': s.type.name, 'intensity': s.intensity},
+      ],
+      'cycles': [
+        for (final c in cycles)
+          {
+            'startDate': day(c.startDate),
+            'periodLength': c.periodLength,
+            'cycleLength': c.cycleLength,
+          },
+      ],
+      'intimacy': [
+        for (final i in intimacy)
+          {
+            'date': day(i.entry.date),
+            'protection': i.entry.protection.name,
+            'inFertileWindow': i.inFertileWindow,
+            'ovulationDay': i.isOvulationDay,
+            'risk': i.risk.name,
+            'daysAgo': i.daysAgo,
+          },
+      ],
+      'prediction': prediction == null
+          ? null
+          : {
+              'cycleDay': prediction.cycleDay,
+              'cycleLength': prediction.cycleLength,
+              'phase': prediction.phase.name,
+              'daysUntilNextPeriod': prediction.daysUntilNextPeriod,
+            },
+    };
+  }
+}
