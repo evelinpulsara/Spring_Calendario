@@ -16,3 +16,22 @@ class ApiSymptomRepository implements SymptomRepository {
     return [
       for (final j in list.cast<Map<String, dynamic>>())
         if (types[j['type']] != null)
+          SymptomEntry(
+            id: '${j['date']}-${j['type']}',
+            date: DateTime.parse(j['date'] as String),
+            type: types[j['type']]!,
+            intensity: (j['intensity'] as num).toInt(),
+          ),
+    ];
+  }
+
+  @override
+  Future<void> saveEntriesForDate(DateTime date, List<SymptomEntry> entries) => _api.put(
+        '/api/symptoms/${ApiClient.date(date)}',
+        [for (final e in entries) {'type': e.type.name, 'intensity': e.intensity}],
+      );
+
+  /// Los datos se borran juntos con DELETE /api/me/data (ver ApiCycleRepository).
+  @override
+  Future<void> clear() async {}
+}
