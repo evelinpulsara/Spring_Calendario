@@ -43,3 +43,49 @@ class RemoteAiInsightService implements AiInsightService {
   @override
   Future<AiInsight> generateInsight({
     required List<SymptomEntry> symptoms,
+    required List<MenstrualCycle> cycles,
+    CyclePrediction? prediction,
+    List<IntimacyRiskInfo> intimacy = const [],
+  }) async {
+    try {
+      final response = await _client
+          .post(
+            Uri.parse('$_baseUrl/api/ai/insight'),
+            headers: _headers(),
+            body: jsonEncode(buildRequestBody(
+              symptoms: symptoms,
+              cycles: cycles,
+              prediction: prediction,
+              intimacy: intimacy,
+            )),
+          )
+          .timeout(_timeout);
+
+      if (response.statusCode != 200) {
+        throw Exception('Backend respondió ${response.statusCode}: ${response.body}');
+      }
+      final json = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+      return AiInsight(
+        title: json['title'] as String,
+        message: json['message'] as String,
+        basedOnEntries: (json['basedOnEntries'] as num?)?.toInt() ?? symptoms.length,
+        generatedAt: DateTime.now(),
+        model: json['model'] as String? ?? 'gemini',
+      );
+    } catch (error) {
+      debugPrint('Asistente Spring: se usa la respuesta local ($error)');
+      return _fallback.generateInsight(
+        symptoms: symptoms,
+        cycles: cycles,
+        prediction: prediction,
+        intimacy: intimacy,
+      );
+    }
+  }
+
+  /// Datos que se envían al backend. Público para poder probarlo.
+  static Map<String, dynamic> buildRequestBody({
+    required List<SymptomEntry> symptoms,
+    required List<MenstrualCycle> cycles,
+    CyclePrediction? prediction,
+    List<IntimacyRiskInfo> intimacy = const [],
