@@ -58,3 +58,63 @@ class _FadeSlideInState extends State<FadeSlideIn> with SingleTickerProviderStat
           offset: Offset(0, widget.offsetY * (1 - _curve.value)),
           child: child,
         ),
+      ),
+    );
+  }
+}
+
+/// Envuelve cada elemento para que aparezcan uno tras otro.
+List<Widget> staggered(List<Widget> children, {Duration step = const Duration(milliseconds: 70)}) {
+  return [
+    for (var i = 0; i < children.length; i++)
+      FadeSlideIn(delay: step * math.min(i, 8), child: children[i]),
+  ];
+}
+
+/// Se encoge un poco al presionarlo, como un botón suave.
+class PressableScale extends StatefulWidget {
+  const PressableScale({super.key, required this.child, this.enabled = true});
+
+  final Widget child;
+  final bool enabled;
+
+  @override
+  State<PressableScale> createState() => _PressableScaleState();
+}
+
+class _PressableScaleState extends State<PressableScale> {
+  bool _pressed = false;
+
+  void _set(bool value) {
+    if (widget.enabled && _pressed != value) setState(() => _pressed = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: (_) => _set(true),
+      onPointerUp: (_) => _set(false),
+      onPointerCancel: (_) => _set(false),
+      child: AnimatedScale(
+        scale: _pressed ? 0.97 : 1,
+        duration: const Duration(milliseconds: 140),
+        curve: Curves.easeOut,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+/// Fondo con manchas de color suaves que flotan lentamente.
+class SoftBackground extends StatefulWidget {
+  const SoftBackground({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  State<SoftBackground> createState() => _SoftBackgroundState();
+}
+
+class _SoftBackgroundState extends State<SoftBackground> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller =
+      AnimationController(vsync: this, duration: const Duration(seconds: 18))..repeat();
