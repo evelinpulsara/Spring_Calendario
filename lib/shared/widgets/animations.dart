@@ -118,3 +118,63 @@ class SoftBackground extends StatefulWidget {
 class _SoftBackgroundState extends State<SoftBackground> with SingleTickerProviderStateMixin {
   late final AnimationController _controller =
       AnimationController(vsync: this, duration: const Duration(seconds: 18))..repeat();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final alpha = isLight ? 110 : 45;
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: IgnorePointer(
+            child: RepaintBoundary(
+              child: AnimatedBuilder(
+                animation: _controller,
+                builder: (context, _) {
+                  final t = _controller.value * 2 * math.pi;
+                  return ImageFiltered(
+                    imageFilter: ImageFilter.blur(sigmaX: 60, sigmaY: 60),
+                    child: Stack(
+                      children: [
+                        _blob(
+                          left: -60 + 30 * math.sin(t),
+                          top: -40 + 20 * math.cos(t),
+                          size: 260,
+                          color: AppColors.lavender.withAlpha(alpha + 60),
+                        ),
+                        _blob(
+                          right: -80 + 25 * math.cos(t),
+                          top: 180 + 30 * math.sin(t),
+                          size: 240,
+                          color: AppColors.softPink.withAlpha(alpha),
+                        ),
+                        _blob(
+                          left: 40 + 20 * math.cos(t + 1),
+                          bottom: -60 + 25 * math.sin(t + 1),
+                          size: 220,
+                          color: AppColors.purple.withAlpha(alpha ~/ 2),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+        widget.child,
+      ],
+    );
+  }
+
+  Widget _blob({
+    double? left,
+    double? right,
+    double? top,
+    double? bottom,
