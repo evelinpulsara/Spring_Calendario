@@ -238,3 +238,56 @@ class _FadeIndexedStackState extends State<FadeIndexedStack> with SingleTickerPr
     );
   }
 }
+
+/// Transición entre pantallas: desvanecido con un leve deslizamiento.
+class SoftPageRoute<T> extends PageRouteBuilder<T> {
+  SoftPageRoute({required WidgetBuilder builder, super.settings})
+      : super(
+          transitionDuration: const Duration(milliseconds: 420),
+          reverseTransitionDuration: const Duration(milliseconds: 320),
+          pageBuilder: (context, _, __) => builder(context),
+          transitionsBuilder: (context, animation, _, child) {
+            final curve = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+            return FadeTransition(
+              opacity: curve,
+              child: SlideTransition(
+                position: Tween(begin: const Offset(0, 0.04), end: Offset.zero).animate(curve),
+                child: child,
+              ),
+            );
+          },
+        );
+}
+
+/// Tres puntitos que saltan (para "Spring está pensando...").
+class ThinkingDots extends StatefulWidget {
+  const ThinkingDots({super.key, this.color = AppColors.purple});
+
+  final Color color;
+
+  @override
+  State<ThinkingDots> createState() => _ThinkingDotsState();
+}
+
+class _ThinkingDotsState extends State<ThinkingDots> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller =
+      AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..repeat();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < 3; i++)
+            Transform.translate(
+              offset: Offset(0, -4 * math.max(0, math.sin((_controller.value * 2 * math.pi) - i * 0.9))),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 2),
