@@ -291,3 +291,44 @@ class _ThinkingDotsState extends State<ThinkingDots> with SingleTickerProviderSt
               offset: Offset(0, -4 * math.max(0, math.sin((_controller.value * 2 * math.pi) - i * 0.9))),
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 2),
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(shape: BoxShape.circle, color: widget.color),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Late suavemente (para llamar la atención sin asustar).
+class GentlePulse extends StatefulWidget {
+  const GentlePulse({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  State<GentlePulse> createState() => _GentlePulseState();
+}
+
+class _GentlePulseState extends State<GentlePulse> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller =
+      AnimationController(vsync: this, duration: const Duration(milliseconds: 1400))
+        ..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: Tween(begin: 0.92, end: 1.08)
+          .animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut)),
+      child: widget.child,
+    );
+  }
+}
