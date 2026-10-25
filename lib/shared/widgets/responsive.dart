@@ -42,3 +42,47 @@ class StaggeredListView extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final List<Widget> children;
   final List<Widget>? sideChildren;
+  final double maxWidth;
+  final int mainFlex;
+  final int sideFlex;
+
+  @override
+  Widget build(BuildContext context) {
+    return SoftBackground(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final side = sideChildren;
+          final wide = constraints.maxWidth >= Breakpoints.twoColumns;
+
+          if (!wide) {
+            return ListView(
+              padding: padding,
+              children: staggered([...children, ...?side]),
+            );
+          }
+
+          final Widget content;
+          if (side == null) {
+            content = Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: staggered(children),
+            );
+          } else {
+            content = Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: mainFlex,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: staggered(children),
+                  ),
+                ),
+                const SizedBox(width: 24),
+                Expanded(
+                  flex: sideFlex,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: staggered(side, step: const Duration(milliseconds: 90)),
+                  ),
+                ),
