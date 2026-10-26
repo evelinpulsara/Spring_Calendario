@@ -108,3 +108,58 @@ class _Header extends StatelessWidget {
 
     if (!expanded) {
       return Column(
+        children: [
+          const MoonWidget(size: 40, progress: 0.35),
+          const SizedBox(height: 10),
+          toggle,
+        ],
+      );
+    }
+    return Row(
+      children: [
+        const MoonWidget(size: 40, progress: 0.35),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            AppConstants.appName,
+            overflow: TextOverflow.fade,
+            softWrap: false,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.4,
+              color: isLight ? AppColors.deepPurple : Colors.white,
+            ),
+          ),
+        ),
+        toggle,
+      ],
+    );
+  }
+}
+
+class _SidebarItem extends StatefulWidget {
+  const _SidebarItem({
+    required this.destination,
+    required this.selected,
+    required this.expanded,
+    required this.onTap,
+  });
+
+  final Destination destination;
+  final bool selected;
+  final bool expanded;
+  final VoidCallback onTap;
+
+  @override
+  State<_SidebarItem> createState() => _SidebarItemState();
+}
+
+class _SidebarItemState extends State<_SidebarItem> {
+  bool _hover = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final selected = widget.selected;
+    final fg = selected
