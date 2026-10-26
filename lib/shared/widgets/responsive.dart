@@ -86,3 +86,41 @@ class StaggeredListView extends StatelessWidget {
                     children: staggered(side, step: const Duration(milliseconds: 90)),
                   ),
                 ),
+              ],
+            );
+          }
+
+          // Alineado a la izquierda, junto al título, como en una página web.
+          return SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(32, 8, 32, 40),
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxWidth),
+                child: content,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Centra un formulario o contenido angosto en pantallas grandes.
+class CenteredContent extends StatelessWidget {
+  const CenteredContent({super.key, required this.child, this.maxWidth = 480});
+
+  final Widget child;
+  final double maxWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: child,
+      ),
+    );
+  }
+}
