@@ -53,3 +53,58 @@ class Sidebar extends StatelessWidget {
         ],
       ),
       child: ClipRect(
+        child: OverflowBox(
+          alignment: Alignment.topLeft,
+          minWidth: 0,
+          maxWidth: expanded ? expandedWidth : collapsedWidth,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _Header(expanded: expanded, onToggle: onToggle),
+                  const SizedBox(height: 28),
+                  for (var i = 0; i < destinations.length; i++)
+                    _SidebarItem(
+                      destination: destinations[i],
+                      selected: i == selectedIndex,
+                      expanded: expanded,
+                      onTap: () => onSelected(i),
+                    ),
+                  const Spacer(),
+                  _Footer(expanded: expanded),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header({required this.expanded, required this.onToggle});
+
+  final bool expanded;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final toggle = IconButton(
+      tooltip: expanded
+          ? AppLanguage.tr('Esconder menú', 'Collapse menu')
+          : AppLanguage.tr('Mostrar menú', 'Expand menu'),
+      onPressed: onToggle,
+      icon: AnimatedRotation(
+        turns: expanded ? 0 : 0.5,
+        duration: const Duration(milliseconds: 280),
+        child: const Icon(Icons.keyboard_double_arrow_left_rounded),
+      ),
+      color: AppColors.textMuted,
+    );
+
+    if (!expanded) {
+      return Column(
