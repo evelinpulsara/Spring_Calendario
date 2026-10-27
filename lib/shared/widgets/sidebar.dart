@@ -218,3 +218,52 @@ class _SidebarItemState extends State<_SidebarItem> {
                         const BoxDecoration(color: AppColors.deepPink, shape: BoxShape.circle),
                   ),
                 ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+
+    return widget.expanded ? item : Tooltip(message: widget.destination.label, child: item);
+  }
+}
+
+/// Parte de abajo: usuaria y cambio de tema.
+class _Footer extends StatelessWidget {
+  const _Footer({required this.expanded});
+
+  final bool expanded;
+
+  @override
+  Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final user = context.watch<SessionController>().user;
+    final themeController = context.watch<ThemeController>();
+    final isDark = themeController.themeMode == ThemeMode.dark;
+    final name = user?.name ?? AppLanguage.tr('Invitada', 'Guest');
+
+    final themeButton = IconButton(
+      tooltip: isDark
+          ? AppLanguage.tr('Tema claro', 'Light theme')
+          : AppLanguage.tr('Tema oscuro', 'Dark theme'),
+      onPressed: () =>
+          themeController.setThemeMode(isDark ? ThemeMode.light : ThemeMode.dark),
+      icon: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        transitionBuilder: (child, animation) =>
+            RotationTransition(turns: animation, child: child),
+        child: Icon(
+          isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+          key: ValueKey(isDark),
+          color: AppColors.purple,
+        ),
+      ),
+    );
+
+    final avatar = CircleAvatar(
+      radius: 18,
+      backgroundColor: AppColors.softPink,
+      child: Text(
+        name.isEmpty ? '?' : name.characters.first.toUpperCase(),
+        style: const TextStyle(color: AppColors.deepPurple, fontWeight: FontWeight.w800),
