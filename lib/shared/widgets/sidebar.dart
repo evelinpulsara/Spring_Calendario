@@ -267,3 +267,40 @@ class _Footer extends StatelessWidget {
       child: Text(
         name.isEmpty ? '?' : name.characters.first.toUpperCase(),
         style: const TextStyle(color: AppColors.deepPurple, fontWeight: FontWeight.w800),
+      ),
+    );
+
+    if (!expanded) {
+      return Column(children: [themeButton, const SizedBox(height: 8), avatar]);
+    }
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isLight ? Colors.white : AppColors.darkSurface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.purple.withAlpha(30)),
+      ),
+      child: Row(
+        children: [
+          avatar,
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                if (user != null)
+                  Text(user.email,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+              ],
+            ),
+          ),
+          themeButton,
+        ],
+      ),
+    );
+  }
+}
