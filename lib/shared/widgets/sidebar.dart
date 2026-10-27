@@ -163,3 +163,58 @@ class _SidebarItemState extends State<_SidebarItem> {
     final isLight = Theme.of(context).brightness == Brightness.light;
     final selected = widget.selected;
     final fg = selected
+        ? (isLight ? AppColors.deepPurple : Colors.white)
+        : (isLight ? const Color(0xFF4A4060) : Colors.white70);
+    final bg = selected
+        ? (isLight ? AppColors.lavender : AppColors.purple.withAlpha(120))
+        : _hover
+            ? AppColors.purple.withAlpha(isLight ? 18 : 40)
+            : Colors.transparent;
+
+    final item = MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          margin: const EdgeInsets.only(bottom: 6),
+          padding: EdgeInsets.symmetric(horizontal: widget.expanded ? 14 : 0, vertical: 12),
+          decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(16)),
+          child: Row(
+            mainAxisAlignment:
+                widget.expanded ? MainAxisAlignment.start : MainAxisAlignment.center,
+            children: [
+              AnimatedScale(
+                scale: selected || _hover ? 1.1 : 1,
+                duration: const Duration(milliseconds: 200),
+                child: Icon(
+                  selected ? widget.destination.selectedIcon : widget.destination.icon,
+                  color: selected ? AppColors.purple : fg,
+                ),
+              ),
+              if (widget.expanded) ...[
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    widget.destination.label,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: fg,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+                AnimatedOpacity(
+                  opacity: selected ? 1 : 0,
+                  duration: const Duration(milliseconds: 200),
+                  child: Container(
+                    width: 6,
+                    height: 6,
+                    decoration:
+                        const BoxDecoration(color: AppColors.deepPink, shape: BoxShape.circle),
+                  ),
+                ),
