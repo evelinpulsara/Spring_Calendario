@@ -40,3 +40,22 @@ void main() {
   test('con condón en días fértiles es riesgo moderado', () {
     final info =
         calculator.assess(entry(DateTime(2026, 10, 12), ProtectionType.condom), projection, today);
+    expect(info.risk, PregnancyRisk.moderate);
+    expect(info.needsAttention, isFalse);
+  });
+
+  test('fuera de la ventana fértil es riesgo bajo', () {
+    final info =
+        calculator.assess(entry(DateTime(2026, 10, 2), ProtectionType.none), projection, today);
+    expect(info.risk, PregnancyRisk.low);
+    expect(info.inFertileWindow, isFalse);
+  });
+
+  test('después de 5 días ya no está a tiempo de la pastilla', () {
+    final info = calculator.assess(
+        entry(ovulation, ProtectionType.none), projection, DateTime(2026, 10, 21));
+    expect(info.risk, PregnancyRisk.high);
+    expect(info.withinEmergencyWindow, isFalse);
+    expect(PregnancyGuidance.message(info), contains('más de 5 días'));
+  });
+}
