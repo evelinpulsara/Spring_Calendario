@@ -90,3 +90,34 @@ void main() {
       ),
     );
     expect(projection.possibleStartDays,
+        {DateTime(2026, 12, 10), DateTime(2026, 12, 11), DateTime(2026, 12, 12)});
+    expect(projection.expectedPeriodDays, {
+      DateTime(2026, 11, 14),
+      DateTime(2026, 11, 15),
+      DateTime(2026, 11, 16),
+      DateTime(2026, 11, 17),
+    });
+    expect(projection.ovulationDays, contains(DateTime(2026, 11, 27)));
+    expect(projection.predictedPeriodDays, contains(DateTime(2026, 12, 11)));
+    expect(projection.predictedPeriodDays, contains(DateTime(2026, 12, 15)));
+  });
+
+  test('datos enviados a la IA (sin nombre ni correo)', () {
+    final cycles = calculator.buildCycles(days(DateTime(2026, 10, 22), 5));
+    final body = RemotePeriodForecastService.buildRequestBody(
+        inputFor(cycles, DateTime(2026, 11, 13), age: AgeGroup.teen));
+    expect(body['today'], '2026-11-13');
+    expect(body['profile'], {
+      'ageGroup': 'teen',
+      'regularity': 'regular',
+      'typicalPeriodLength': 5,
+      'typicalCycleLength': 29,
+    });
+    expect(body['cycles'], [
+      {'startDate': '2026-10-22', 'periodLength': 5, 'cycleLength': null}
+    ]);
+    expect(body['baseline'],
+        {'nextStart': '2026-11-20', 'periodLength': 5, 'ovulation': '2026-11-06'});
+    expect(body.toString(), isNot(contains('@')));
+  });
+}
