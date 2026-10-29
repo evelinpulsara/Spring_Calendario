@@ -59,3 +59,34 @@ void main() {
 
   test('ciclo irregular o adolescente -> ventana más ancha', () {
     final cycles = calculator.buildCycles(days(DateTime(2026, 10, 22), 5));
+    final today = DateTime(2026, 11, 13);
+    final regular = LocalPeriodForecastService.windowSide(inputFor(cycles, today));
+    final irregularTeen = LocalPeriodForecastService.windowSide(
+        inputFor(cycles, today, age: AgeGroup.teen, reg: CycleRegularity.irregular));
+    expect(irregularTeen, greaterThan(regular));
+    expect(irregularTeen, lessThanOrEqualTo(4));
+  });
+
+  test('un periodo recién empezado no acorta la duración esperada', () {
+    // Empezó hace 1 día (solo 2 días registrados) y suele durar 6.
+    final cycles = calculator.buildCycles(days(DateTime(2026, 11, 12), 2));
+    final input = inputFor(cycles, DateTime(2026, 11, 13), typicalPeriod: 6);
+    expect(input.expectedPeriodLength, 6);
+  });
+
+  test('con la predicción: días de posible inicio y días opacos del periodo actual', () {
+    // Registró solo el primer día; la predicción dice que dura 5.
+    final cycles = calculator.buildCycles(days(DateTime(2026, 11, 13), 1));
+    final projection = calculator.project(
+      cycles: cycles,
+      fallbackCycleLength: 29,
+      fallbackPeriodLength: 5,
+      override: PredictionOverride(
+        earliestStart: DateTime(2026, 12, 10),
+        likelyStart: DateTime(2026, 12, 11),
+        latestStart: DateTime(2026, 12, 12),
+        periodLength: 5,
+        ovulationDate: DateTime(2026, 11, 27),
+      ),
+    );
+    expect(projection.possibleStartDays,
