@@ -28,3 +28,34 @@ void main() {
       int typicalCycle = 29}) {
     final baseline = calculator.predict(
       cycles: cycles,
+      today: today,
+      fallbackCycleLength: typicalCycle,
+      fallbackPeriodLength: typicalPeriod,
+    )!;
+    return ForecastInput(
+      today: today,
+      ageGroup: age,
+      regularity: reg,
+      typicalPeriodLength: typicalPeriod,
+      typicalCycleLength: typicalCycle,
+      cycles: cycles,
+      baseline: baseline,
+    );
+  }
+
+  test('ejemplo real: periodo el 22 oct, ciclo de 29 días -> 20 nov, ovulación 6 nov', () async {
+    final cycles = calculator.buildCycles(days(DateTime(2026, 10, 22), 5));
+    final input = inputFor(cycles, DateTime(2026, 11, 13));
+    final f = await const LocalPeriodForecastService().forecast(input);
+
+    expect(f.likelyStart, DateTime(2026, 11, 20));
+    expect(f.ovulationDate, DateTime(2026, 11, 6));
+    expect(f.periodLength, 5);
+    // Pocos datos: ventana de 2 días a cada lado.
+    expect(f.earliestStart, DateTime(2026, 11, 18));
+    expect(f.latestStart, DateTime(2026, 11, 22));
+    expect(f.isFromAi, isFalse);
+  });
+
+  test('ciclo irregular o adolescente -> ventana más ancha', () {
+    final cycles = calculator.buildCycles(days(DateTime(2026, 10, 22), 5));
