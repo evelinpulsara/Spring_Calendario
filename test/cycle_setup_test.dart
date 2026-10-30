@@ -72,3 +72,35 @@ void main() {
     await settle(tester);
 
     // 2. Duración del periodo
+    expect(find.text('¿Cuántos días dura tu periodo?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(ChoiceChip, '6'));
+    await settle(tester);
+    await tester.tap(find.text('Continuar'));
+    await settle(tester);
+
+    // 3. Duración del ciclo (deja el valor sugerido)
+    expect(find.text('¿Cada cuántos días te llega?'), findsOneWidget);
+    await tester.tap(find.text('Continuar'));
+    await settle(tester);
+
+    // 4. Regularidad
+    await tester.tap(find.text('No, es irregular'));
+    await settle(tester);
+    await tester.tap(find.text('Continuar'));
+    await settle(tester);
+
+    // 5. Última menstruación (sugerida desde los registros)
+    expect(find.text('¿Cuándo empezó tu última menstruación?'), findsOneWidget);
+    expect(find.textContaining('Seleccionado:'), findsOneWidget);
+    await tester.tap(find.text('Ver mi predicción'));
+    await settle(tester);
+
+    final user = deps.sessionController.user!;
+    expect(user.cycleSetupCompleted, isTrue);
+    expect(user.ageGroup, AgeGroup.adult);
+    expect(user.averagePeriodDuration, 6);
+    expect(user.regularity, CycleRegularity.irregular);
+    expect(find.text('abrir'), findsOneWidget); // volvió atrás
+    expect(tester.takeException(), isNull);
+  });
+}
