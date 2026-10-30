@@ -35,3 +35,40 @@ void main() {
     await tester.pumpWidget(MultiProvider(
       providers: [
         ChangeNotifierProvider<SessionController>.value(value: deps.sessionController),
+        ChangeNotifierProvider<CycleController>.value(value: deps.cycleController),
+      ],
+      child: MaterialApp(
+        theme: AppTheme.light,
+        locale: const Locale('es'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: Center(
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                    builder: (_) => const CycleSetupScreen(isEditing: true))),
+                child: const Text('abrir'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ));
+    await settle(tester);
+    await tester.tap(find.text('abrir'));
+    await settle(tester);
+
+    // 1. Edad
+    expect(find.text('¿En qué etapa estás?'), findsOneWidget);
+    await tester.tap(find.text('Adulta'));
+    await settle(tester);
+    await tester.tap(find.text('Continuar'));
+    await settle(tester);
+
+    // 2. Duración del periodo
