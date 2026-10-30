@@ -28,3 +28,33 @@ class _FakeFallback implements AiInsightService {
 
 final _symptoms = [
   SymptomEntry(id: '1', date: DateTime(2026, 10, 3), type: SymptomType.cramps, intensity: 4),
+];
+final _cycles = [MenstrualCycle(startDate: DateTime(2026, 10, 1), periodLength: 5)];
+final _prediction = CyclePrediction(
+  cycleDay: 3,
+  cycleLength: 28,
+  periodLength: 5,
+  phase: CyclePhase.menstrual,
+  daysUntilNextPeriod: 25,
+  nextPeriodStart: DateTime(2026, 10, 29),
+  nextPeriodEnd: DateTime(2026, 11, 2),
+  ovulationDate: DateTime(2026, 10, 15),
+  fertileWindowStart: DateTime(2026, 10, 10),
+  fertileWindowEnd: DateTime(2026, 10, 16),
+);
+
+void main() {
+  setUp(() => AppLanguage.isSpanish = true);
+
+  test('envía el resumen al backend y devuelve el consejo de la IA', () async {
+    late Map<String, dynamic> sent;
+    final client = MockClient((request) async {
+      expect(request.url.toString(), 'http://backend.test/api/ai/insight');
+      sent = jsonDecode(request.body) as Map<String, dynamic>;
+      return http.Response.bytes(
+        utf8.encode(jsonEncode({
+          'title': 'Cólicos al inicio',
+          'message': 'Descansa y mantente hidratada.',
+          'basedOnEntries': 1,
+          'model': 'gemini-3.8-flash',
+        })),
