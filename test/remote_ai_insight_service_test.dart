@@ -88,3 +88,34 @@ void main() {
     expect(insight.isFromAi, isTrue);
     expect(insight.model, 'gemini-3.8-flash');
     expect(sent['language'], 'es');
+    expect(sent['symptoms'], [
+      {'date': '2026-10-03', 'type': 'cramps', 'intensity': 4}
+    ]);
+    expect(sent['cycles'][0]['cycleLength'], isNull);
+    expect(sent['prediction']['phase'], 'menstrual');
+    expect(sent['intimacy'], [
+      {
+        'date': '2026-10-14',
+        'protection': 'none',
+        'inFertileWindow': true,
+        'ovulationDay': true,
+        'risk': 'high',
+        'daysAgo': 2,
+      }
+    ]);
+  });
+
+  test('usa la respuesta local si el backend falla', () async {
+    final client = MockClient((_) async => http.Response('{"error":"x"}', 503));
+    final service = RemoteAiInsightService(
+      fallback: _FakeFallback(),
+      client: client,
+      baseUrl: 'http://backend.test',
+    );
+
+    final insight = await service.generateInsight(symptoms: _symptoms, cycles: _cycles);
+
+    expect(insight.title, 'local');
+    expect(insight.isFromAi, isFalse);
+  });
+}
