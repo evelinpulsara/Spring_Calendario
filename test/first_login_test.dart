@@ -13,3 +13,19 @@ void main() {
     expect(AppRoutes.afterLogin(session.user!.cycleSetupCompleted), AppRoutes.cycleSetup);
 
     // Responde el cuestionario.
+    await session.updateProfile(session.user!.copyWith(
+      ageGroup: AgeGroup.teen,
+      averagePeriodDuration: 6,
+      averageCycleLength: 32,
+      cycleSetupCompleted: true,
+    ));
+
+    // Cierra sesión y vuelve a entrar: ya no se le pregunta y se conservan sus respuestas.
+    await session.logout();
+    await session.login(email: 'ana@correo.com', password: '123456');
+    expect(AppRoutes.afterLogin(session.user!.cycleSetupCompleted), AppRoutes.home);
+    expect(session.user!.ageGroup, AgeGroup.teen);
+    expect(session.user!.averagePeriodDuration, 6);
+    expect(session.user!.averageCycleLength, 32);
+  });
+}
