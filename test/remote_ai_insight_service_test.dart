@@ -58,3 +58,33 @@ void main() {
           'basedOnEntries': 1,
           'model': 'gemini-3.8-flash',
         })),
+        200,
+        headers: {'content-type': 'application/json'},
+      );
+    });
+    final service = RemoteAiInsightService(
+      fallback: _FakeFallback(),
+      client: client,
+      baseUrl: 'http://backend.test',
+    );
+
+    final insight = await service.generateInsight(
+      symptoms: _symptoms,
+      cycles: _cycles,
+      prediction: _prediction,
+      intimacy: [
+        IntimacyRiskInfo(
+          entry: IntimacyEntry(
+              id: 'i1', date: DateTime(2026, 10, 14), protection: ProtectionType.none),
+          risk: PregnancyRisk.high,
+          inFertileWindow: true,
+          isOvulationDay: true,
+          daysAgo: 2,
+        ),
+      ],
+    );
+
+    expect(insight.title, 'Cólicos al inicio');
+    expect(insight.isFromAi, isTrue);
+    expect(insight.model, 'gemini-3.8-flash');
+    expect(sent['language'], 'es');
