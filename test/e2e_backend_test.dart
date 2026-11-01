@@ -24,3 +24,29 @@ Future<bool> _backendUp() async {
     final res = await (await client.getUrl(Uri.parse('http://localhost:8080/api/health'))).close();
     return res.statusCode == 200;
   } catch (_) {
+    return false;
+  }
+}
+
+void main() {
+  test('la app guarda y lee datos de la base de datos', () async {
+    if (!await _backendUp()) {
+      markTestSkipped('Backend apagado: prueba omitida');
+      return;
+    }
+    SharedPreferences.setMockInitialValues({});
+    final api = ApiClient(baseUrl: 'http://localhost:8080');
+    final users = ApiUserRepository(api);
+    final email = 'e2e-${DateTime.now().millisecondsSinceEpoch}@correo.com';
+
+    final user = await users.register(name: 'Prueba', email: email, password: 'secreto123');
+    expect(user.cycleSetupCompleted, isFalse);
+    await users.updateUser(user.copyWith(cycleSetupCompleted: true, averagePeriodDuration: 6));
+
+    final cycles = ApiCycleRepository(api);
+    await cycles.savePeriodEntry(
+        PeriodEntry(id: 'x', date: DateTime(2026, 10, 22), flow: FlowIntensity.heavy));
+    final symptoms = ApiSymptomRepository(api);
+    await symptoms.saveEntriesForDate(DateTime(2026, 10, 22), [
+      SymptomEntry(id: 'a', date: DateTime(2026, 10, 22), type: SymptomType.cramps, intensity: 4),
+    ]);
