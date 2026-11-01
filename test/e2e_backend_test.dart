@@ -50,3 +50,26 @@ void main() {
     await symptoms.saveEntriesForDate(DateTime(2026, 10, 22), [
       SymptomEntry(id: 'a', date: DateTime(2026, 10, 22), type: SymptomType.cramps, intensity: 4),
     ]);
+    final intimacy = ApiIntimacyRepository(api);
+    await intimacy.save(
+        IntimacyEntry(id: 'i', date: DateTime(2026, 11, 6), protection: ProtectionType.condom));
+
+    // "Recargar la página": nueva instancia que recupera la sesión guardada.
+    final reloaded = ApiUserRepository(ApiClient(baseUrl: 'http://localhost:8080'));
+    final restored = await reloaded.getCurrentUser();
+    expect(restored!.email, email);
+    expect(restored.cycleSetupCompleted, isTrue);
+    expect(restored.averagePeriodDuration, 6);
+
+    expect((await cycles.getPeriodEntries()).single.flow, FlowIntensity.heavy);
+    expect((await symptoms.getAllEntries()).single.type, SymptomType.cramps);
+    expect((await intimacy.getAll()).single.protection, ProtectionType.condom);
+
+    await cycles.clear();
+    expect(await cycles.getPeriodEntries(), isEmpty);
+    expect(await intimacy.getAll(), isEmpty);
+
+    await users.logout();
+    expect(await ApiUserRepository(api).getCurrentUser(), isNull);
+  });
+}
