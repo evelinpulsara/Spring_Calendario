@@ -39,3 +39,44 @@ void main() {
     ('celular', const Size(390, 844)),
     ('computadora', const Size(1440, 900)),
     ('computadora pequeña', const Size(1000, 760)),
+  ]) {
+    testWidgets('las pantallas se muestran sin errores en $name', (tester) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final deps = AppDependencies(useBackend: false);
+      // Relación sin protección hoy, para mostrar el aviso de riesgo.
+      await deps.cycleController.load();
+      await deps.intimacyController.save(AppDateUtils.today(), ProtectionType.none);
+
+      await tester.pumpWidget(MultiProvider(
+        providers: [
+          ChangeNotifierProvider<SessionController>.value(value: deps.sessionController),
+          ChangeNotifierProvider<CycleController>.value(value: deps.cycleController),
+          ChangeNotifierProvider<SymptomController>.value(value: deps.symptomController),
+          ChangeNotifierProvider<ThemeController>.value(value: deps.themeController),
+          ChangeNotifierProvider<LocaleController>.value(value: deps.localeController),
+          ChangeNotifierProvider<IntimacyController>.value(value: deps.intimacyController),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light,
+          locale: const Locale('es'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          home: const MainShell(),
+        ),
+      ));
+      await settle(tester);
+      expect(find.textContaining('Hola'), findsOneWidget);
+      expect(find.text('Posible riesgo de embarazo'), findsOneWidget);
+      await tester.scrollUntilVisible(find.textContaining('Relación registrada hoy'), 300,
+          scrollable: find.byType(Scrollable).first);
+      await settle(tester);
+
+      for (final tab in ['Calendario', 'Registrar síntomas', 'Estadísticas', 'Perfil', 'Inicio']) {
