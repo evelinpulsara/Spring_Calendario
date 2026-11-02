@@ -80,3 +80,44 @@ void main() {
       await settle(tester);
 
       for (final tab in ['Calendario', 'Registrar síntomas', 'Estadísticas', 'Perfil', 'Inicio']) {
+        await goTo(tester, tab);
+      }
+
+      // Calendario: detalle del día con la relación y su panel.
+      await goTo(tester, 'Calendario');
+      // Corazón lleno en el calendario = relación sin protección.
+      Finder inGrid(IconData icon) => find.descendant(
+          of: find.descendant(of: find.byType(CalendarScreen), matching: find.byType(GridView)),
+          matching: find.byIcon(icon));
+      expect(inGrid(Icons.favorite_rounded), findsOneWidget);
+      expect(inGrid(Icons.favorite_border_rounded), findsNothing);
+      await tester.scrollUntilVisible(find.textContaining('Relación sexual ·'), 300,
+          scrollable: find
+              .descendant(of: find.byType(CalendarScreen), matching: find.byType(Scrollable))
+              .first);
+      await settle(tester);
+      expect(find.textContaining('Relación sexual ·'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Editar relación registrada'), 300,
+          scrollable: find
+              .descendant(of: find.byType(CalendarScreen), matching: find.byType(Scrollable))
+              .first);
+      await settle(tester);
+      await tester.tap(find.text('Editar relación registrada'));
+      await settle(tester);
+      expect(find.text('¿Usaron protección?'), findsOneWidget);
+      await tester.tap(find.text('Con condón'));
+      await settle(tester);
+      await tester.tap(find.text('Guardar'));
+      await settle(tester);
+      expect(deps.intimacyController.entryFor(AppDateUtils.today())!.protection,
+          ProtectionType.condom);
+      // Con condón: el corazón queda solo con el contorno (subimos hasta el calendario).
+      await tester.drag(
+          find.descendant(of: find.byType(CalendarScreen), matching: find.byType(Scrollable)).first,
+          const Offset(0, 3000));
+      await settle(tester);
+      expect(inGrid(Icons.favorite_border_rounded), findsOneWidget);
+      expect(inGrid(Icons.favorite_rounded), findsNothing);
+
+      // Cambiar de mes.
+      await tester.scrollUntilVisible(
