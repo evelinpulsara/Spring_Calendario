@@ -121,3 +121,45 @@ void main() {
 
       // Cambiar de mes.
       await tester.scrollUntilVisible(
+          find.descendant(
+              of: find.byType(CalendarScreen), matching: find.byIcon(Icons.chevron_right_rounded)),
+          -300,
+          scrollable: find
+              .descendant(of: find.byType(CalendarScreen), matching: find.byType(Scrollable))
+              .first);
+      await settle(tester);
+      final nextMonth = find.descendant(
+          of: find.byType(CalendarScreen), matching: find.byIcon(Icons.chevron_right_rounded));
+      final monthBefore = find.descendant(
+          of: find.byType(CalendarScreen),
+          matching: find.text(AppDateUtils.monthYear(DateTime.now())));
+      expect(monthBefore, findsOneWidget);
+      await tester.drag(
+          find.descendant(of: find.byType(CalendarScreen), matching: find.byType(Scrollable)).first,
+          const Offset(0, 3000));
+      await settle(tester);
+      await tester.tap(nextMonth);
+      await settle(tester);
+      expect(
+          find.descendant(
+              of: find.byType(CalendarScreen),
+              matching: find.text(
+                  AppDateUtils.monthYear(DateTime(DateTime.now().year, DateTime.now().month + 1)))),
+          findsOneWidget);
+      await settle(tester);
+
+      if (size.width >= 900) {
+        expect(find.byType(Sidebar), findsOneWidget);
+        expect(find.byType(NavigationBar), findsNothing);
+        // El menú lateral se puede esconder y volver a mostrar.
+        await tester.tap(find.byTooltip(size.width >= 1200 ? 'Esconder menú' : 'Mostrar menú'));
+        await settle(tester);
+        await tester.tap(find.byTooltip(size.width >= 1200 ? 'Mostrar menú' : 'Esconder menú'));
+        await settle(tester);
+      } else {
+        expect(find.byType(NavigationBar), findsOneWidget);
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
+}
