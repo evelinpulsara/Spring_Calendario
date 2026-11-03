@@ -171,3 +171,56 @@ class CycleCalculator {
     final cycleLength = (averageCycleLength(cycles) ?? fallbackCycleLength).round();
     final periodLength =
         override?.periodLength ?? (averagePeriodLength(cycles) ?? fallbackPeriodLength).round();
+    final lastCycle = cycles.last;
+    final useOverride = override != null &&
+        AppDateUtils.daysBetween(lastCycle.startDate, override.likelyStart) >= 15;
+
+    final period = <DateTime>{};
+    final fertile = <DateTime>{};
+    final ovulation = <DateTime>{};
+
+    void addFertility(DateTime cycleStart, int length) {
+      final ovulationDate =
+          AppDateUtils.addDays(cycleStart, length - AppConstants.lutealPhaseLength);
+      ovulation.add(ovulationDate);
+      for (var i = -AppConstants.fertileDaysBeforeOvulation;
+          i <= AppConstants.fertileDaysAfterOvulation;
+          i++) {
+        fertile.add(AppDateUtils.addDays(ovulationDate, i));
+      }
+    }
+
+    for (final cycle in cycles) {
+      if (cycle == lastCycle && useOverride) {
+        // Ovulación y días fértiles del ciclo actual según la IA.
+        ovulation.add(override.ovulationDate);
+        for (var i = -AppConstants.fertileDaysBeforeOvulation;
+            i <= AppConstants.fertileDaysAfterOvulation;
+            i++) {
+          fertile.add(AppDateUtils.addDays(override.ovulationDate, i));
+        }
+      } else {
+        addFertility(cycle.startDate, cycle.cycleLength ?? cycleLength);
+      }
+    }
+
+    // Primer inicio futuro: el de la IA o el promedio.
+    final firstStart = useOverride
+        ? override.likelyStart
+        : AppDateUtils.addDays(lastCycle.startDate, cycleLength);
+    for (var k = 0; k < futureCycles; k++) {
+      final start = AppDateUtils.addDays(firstStart, cycleLength * k);
+      for (var d = 0; d < periodLength; d++) {
+        period.add(AppDateUtils.addDays(start, d));
+      }
+      addFertility(start, cycleLength);
+    }
+
+    // Ventana de posibles días de inicio del próximo periodo.
+    final possible = <DateTime>{};
+    if (useOverride) {
+      for (var d = override.earliestStart;
+          !d.isAfter(override.latestStart);
+          d = AppDateUtils.addDays(d, 1)) {
+        possible.add(d);
+      }
