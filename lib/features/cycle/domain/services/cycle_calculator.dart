@@ -224,3 +224,44 @@ class CycleCalculator {
           d = AppDateUtils.addDays(d, 1)) {
         possible.add(d);
       }
+    } else {
+      for (var i = -1; i <= 1; i++) {
+        possible.add(AppDateUtils.addDays(firstStart, i));
+      }
+    }
+
+    // Días probables del periodo actual que aún no se registraron.
+    final expected = <DateTime>{};
+    if (lastCycle.periodLength < periodLength) {
+      for (var d = lastCycle.periodLength; d < periodLength; d++) {
+        expected.add(AppDateUtils.addDays(lastCycle.startDate, d));
+      }
+    }
+
+    return CycleProjection(
+      predictedPeriodDays: period,
+      fertileDays: fertile,
+      ovulationDays: ovulation,
+      possibleStartDays: possible,
+      expectedPeriodDays: expected,
+    );
+  }
+}
+
+/// Predicción del próximo periodo (de la IA o local) que reemplaza al
+/// cálculo por promedios.
+class PredictionOverride {
+  const PredictionOverride({
+    required this.earliestStart,
+    required this.likelyStart,
+    required this.latestStart,
+    required this.periodLength,
+    required this.ovulationDate,
+  });
+
+  final DateTime earliestStart;
+  final DateTime likelyStart;
+  final DateTime latestStart;
+  final int periodLength;
+  final DateTime ovulationDate;
+}
