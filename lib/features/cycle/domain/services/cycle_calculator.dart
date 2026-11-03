@@ -104,3 +104,70 @@ class CycleCalculator {
     if (cycles.isEmpty) return null;
 
     var cycleLength = (averageCycleLength(cycles) ?? fallbackCycleLength).round();
+    final periodLength =
+        override?.periodLength ?? (averagePeriodLength(cycles) ?? fallbackPeriodLength).round();
+
+    // If the user forgot to log a period, keep projecting forward.
+    var currentStart = cycles.last.startDate;
+    final DateTime nextStart;
+    if (override != null &&
+        AppDateUtils.daysBetween(currentStart, override.likelyStart) >= 15) {
+      // Predicción de la IA para el próximo inicio.
+      nextStart = override.likelyStart;
+      cycleLength = AppDateUtils.daysBetween(currentStart, nextStart);
+    } else {
+      while (AppDateUtils.daysBetween(currentStart, today) >= cycleLength) {
+        currentStart = AppDateUtils.addDays(currentStart, cycleLength);
+      }
+      nextStart = AppDateUtils.addDays(currentStart, cycleLength);
+    }
+    final cycleDay = math.max(1, AppDateUtils.daysBetween(currentStart, today) + 1);
+
+    // Cycle day on which ovulation is expected (1-based).
+    final ovulationDay = override != null && override.ovulationDate.isAfter(currentStart)
+        ? AppDateUtils.daysBetween(currentStart, override.ovulationDate) + 1
+        : cycleLength - AppConstants.lutealPhaseLength + 1;
+
+    var ovulation = AppDateUtils.addDays(currentStart, ovulationDay - 1);
+    if (ovulation.isBefore(today)) {
+      ovulation = AppDateUtils.addDays(nextStart, ovulationDay - 1); // next cycle
+    }
+
+    final CyclePhase phase;
+    if (cycleDay <= periodLength) {
+      phase = CyclePhase.menstrual;
+    } else if (cycleDay < ovulationDay - 1) {
+      phase = CyclePhase.follicular;
+    } else if (cycleDay <= ovulationDay + 1) {
+      phase = CyclePhase.ovulation;
+    } else {
+      phase = CyclePhase.luteal;
+    }
+
+    return CyclePrediction(
+      cycleDay: cycleDay,
+      cycleLength: cycleLength,
+      periodLength: periodLength,
+      phase: phase,
+      daysUntilNextPeriod: AppDateUtils.daysBetween(today, nextStart),
+      nextPeriodStart: nextStart,
+      nextPeriodEnd: AppDateUtils.addDays(nextStart, periodLength - 1),
+      ovulationDate: ovulation,
+      fertileWindowStart: AppDateUtils.addDays(ovulation, -AppConstants.fertileDaysBeforeOvulation),
+      fertileWindowEnd: AppDateUtils.addDays(ovulation, AppConstants.fertileDaysAfterOvulation),
+    );
+  }
+
+  /// Projects period, fertile and ovulation days for the calendar.
+  CycleProjection project({
+    required List<MenstrualCycle> cycles,
+    required int fallbackCycleLength,
+    required int fallbackPeriodLength,
+    int futureCycles = 8,
+    PredictionOverride? override,
+  }) {
+    if (cycles.isEmpty) return CycleProjection.empty;
+
+    final cycleLength = (averageCycleLength(cycles) ?? fallbackCycleLength).round();
+    final periodLength =
+        override?.periodLength ?? (averagePeriodLength(cycles) ?? fallbackPeriodLength).round();
