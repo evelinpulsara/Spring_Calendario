@@ -38,3 +38,43 @@ class User {
     required this.averageCycleLength,
     required this.averagePeriodDuration,
     this.notifications = const NotificationPreferences(),
+    this.ageGroup = AgeGroup.unknown,
+    this.regularity = CycleRegularity.unsure,
+    this.cycleSetupCompleted = false,
+  });
+
+  final String id;
+  final String name;
+  final String email;
+  final int averageCycleLength;
+  final int averagePeriodDuration;
+  final NotificationPreferences notifications;
+  final AgeGroup ageGroup;
+  final CycleRegularity regularity;
+
+  /// false hasta que responde el cuestionario inicial del ciclo.
+  final bool cycleSetupCompleted;
+
+  User copyWith({
+    String? name,
+    String? email,
+    int? averageCycleLength,
+    int? averagePeriodDuration,
+    NotificationPreferences? notifications,
+    AgeGroup? ageGroup,
+    CycleRegularity? regularity,
+    bool? cycleSetupCompleted,
+  }) {
+    return User(
+      id: id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      averageCycleLength: averageCycleLength ?? this.averageCycleLength,
+      averagePeriodDuration: averagePeriodDuration ?? this.averagePeriodDuration,
+      notifications: notifications ?? this.notifications,
+      ageGroup: ageGroup ?? this.ageGroup,
+      regularity: regularity ?? this.regularity,
+      cycleSetupCompleted: cycleSetupCompleted ?? this.cycleSetupCompleted,
+    );
+  }
+}
