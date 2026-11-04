@@ -23,6 +23,12 @@ class NotificationPreferences {
   }
 }
 
+/// Grupo de edad (cambia los rangos normales del ciclo).
+enum AgeGroup { teen, adult, unknown }
+
+/// Qué tan regular es el ciclo, según la usuaria.
+enum CycleRegularity { regular, irregular, unsure }
+
 /// Application user. Cycle settings are used as fallbacks for predictions.
 class User {
   const User({
@@ -32,29 +38,3 @@ class User {
     required this.averageCycleLength,
     required this.averagePeriodDuration,
     this.notifications = const NotificationPreferences(),
-  });
-
-  final String id;
-  final String name;
-  final String email;
-  final int averageCycleLength;
-  final int averagePeriodDuration;
-  final NotificationPreferences notifications;
-
-  User copyWith({
-    String? name,
-    String? email,
-    int? averageCycleLength,
-    int? averagePeriodDuration,
-    NotificationPreferences? notifications,
-  }) {
-    return User(
-      id: id,
-      name: name ?? this.name,
-      email: email ?? this.email,
-      averageCycleLength: averageCycleLength ?? this.averageCycleLength,
-      averagePeriodDuration: averagePeriodDuration ?? this.averagePeriodDuration,
-      notifications: notifications ?? this.notifications,
-    );
-  }
-}
