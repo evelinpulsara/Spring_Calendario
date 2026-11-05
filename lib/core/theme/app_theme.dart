@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lunaflow/core/theme/app_colors.dart';
+import 'package:spring_calendario/core/theme/app_colors.dart';
 
 /// Builds the light and dark Material themes.
 class AppTheme {
@@ -46,36 +46,3 @@ class AppTheme {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
       ),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: isLight ? AppColors.deepPurple : Colors.white,
-          minimumSize: const Size(88, 48),
-          side: const BorderSide(color: AppColors.purple),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: fieldColor,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.lavender),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.lavender),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.purple, width: 2),
-        ),
-      ),
-      navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: isLight ? Colors.white : AppColors.darkSurface,
-        indicatorColor: isLight ? AppColors.lavender : AppColors.purple,
-        elevation: 8,
-      ),
-    );
-  }
-}
