@@ -211,3 +211,110 @@ class _CycleHeroCard extends StatelessWidget {
     }
   }
 
+  String _phaseLabel(AppLocalizations t) {
+    switch (prediction.phase) {
+      case CyclePhase.menstrual:
+        return t.menstrualPhase;
+      case CyclePhase.follicular:
+        return t.follicularPhase;
+      case CyclePhase.ovulation:
+        return t.ovulationPhase;
+      case CyclePhase.luteal:
+        return t.lutealPhase;
+    }
+  }
+
+  String _phaseDescription(AppLocalizations t) {
+    switch (prediction.phase) {
+      case CyclePhase.menstrual:
+        return t.isSpanish
+            ? 'Buen momento para descansar, hidratarte y ser amable contigo misma.'
+            : prediction.phase.description;
+      case CyclePhase.follicular:
+        return t.isSpanish
+            ? 'La energía suele aumentar. Ideal para planificar y nuevas rutinas.'
+            : prediction.phase.description;
+      case CyclePhase.ovulation:
+        return t.isSpanish ? 'Pico fértil estimado de tu ciclo.' : prediction.phase.description;
+      case CyclePhase.luteal:
+        return t.isSpanish
+            ? 'Algunos síntomas premenstruales pueden aparecer. Registra cómo te sientes.'
+            : prediction.phase.description;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final progress = ((prediction.cycleDay - 1) / prediction.cycleLength).clamp(0.0, 1.0);
+    return SpringCard(
+      gradient: AppColors.heroGradient,
+      padding: const EdgeInsets.all(22),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(_phaseLabel(t),
+                      style: const TextStyle(color: Colors.white, fontSize: 12)),
+                ),
+                const SizedBox(height: 12),
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 1, end: prediction.cycleDay.toDouble()),
+                  duration: const Duration(milliseconds: 1100),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, value, _) => Text(
+                    t.isSpanish ? 'Día ${value.round()}' : 'Day ${value.round()}',
+                    style: const TextStyle(
+                        color: Colors.white, fontSize: 36, fontWeight: FontWeight.w800),
+                  ),
+                ),
+                Text(
+                  t.isSpanish
+                      ? 'de un ciclo de ${prediction.cycleLength} días'
+                      : 'of ${prediction.cycleLength}-day cycle',
+                  style: const TextStyle(color: Colors.white70),
+                ),
+                const SizedBox(height: 12),
+                Text(_countdown(t),
+                    style: const TextStyle(color: AppColors.softPink, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 6),
+                Text(_phaseDescription(t),
+                    style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.3)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          _CycleRing(progress: progress.toDouble()),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyCycleCard extends StatelessWidget {
+  const _EmptyCycleCard({required this.onLogToday});
+
+  final VoidCallback onLogToday;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    return SpringCard(
+      gradient: AppColors.heroGradient,
+      child: Column(
+        children: [
+          const MoonWidget(size: 90, progress: 0.05),
+          const SizedBox(height: 12),
+          Text(
+            t.isSpanish
+                ? 'Registra tu primera menstruación para desbloquear predicciones'
+                : 'Log your first period to unlock predictions',
+            textAlign: TextAlign.center,
