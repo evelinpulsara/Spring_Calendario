@@ -318,3 +318,110 @@ class _EmptyCycleCard extends StatelessWidget {
                 ? 'Registra tu primera menstruación para desbloquear predicciones'
                 : 'Log your first period to unlock predictions',
             textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 14),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white, foregroundColor: AppColors.deepPurple),
+            onPressed: onLogToday,
+            child: Text(t.isSpanish ? 'Mi menstruación empezó hoy' : 'My period started today'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Luna flotando dentro de un anillo que se llena según el día del ciclo.
+class _CycleRing extends StatefulWidget {
+  const _CycleRing({required this.progress});
+
+  final double progress;
+
+  @override
+  State<_CycleRing> createState() => _CycleRingState();
+}
+
+class _CycleRingState extends State<_CycleRing> with SingleTickerProviderStateMixin {
+  late final AnimationController _float =
+      AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _float.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 124,
+      height: 124,
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0, end: widget.progress),
+        duration: const Duration(milliseconds: 1400),
+        curve: Curves.easeOutCubic,
+        builder: (context, value, child) => CustomPaint(
+          painter: _RingPainter(value),
+          child: child,
+        ),
+        child: Center(
+          child: AnimatedBuilder(
+            animation: _float,
+            builder: (context, child) => Transform.translate(
+              offset: Offset(0, -4 + 8 * Curves.easeInOut.transform(_float.value)),
+              child: child,
+            ),
+            child: MoonWidget(size: 92, progress: widget.progress),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RingPainter extends CustomPainter {
+  _RingPainter(this.progress);
+
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final center = rect.center;
+    final radius = size.width / 2 - 4;
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5
+        ..color = Colors.white24,
+    );
+    final sweep = 2 * math.pi * progress;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -math.pi / 2,
+      sweep,
+      false,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5
+        ..strokeCap = StrokeCap.round
+        ..shader = const SweepGradient(
+          colors: [AppColors.softPink, Colors.white, AppColors.softPink],
+        ).createShader(Rect.fromCircle(center: center, radius: radius)),
+    );
+    // Puntito que marca el día actual.
+    final angle = -math.pi / 2 + sweep;
+    canvas.drawCircle(
+      Offset(center.dx + radius * math.cos(angle), center.dy + radius * math.sin(angle)),
+      6,
+      Paint()..color = Colors.white,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _RingPainter oldDelegate) => oldDelegate.progress != progress;
+}
