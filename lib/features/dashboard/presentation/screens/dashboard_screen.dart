@@ -104,3 +104,110 @@ class DashboardScreen extends StatelessWidget {
                 children: [
                   SectionTitle(t.isSpanish ? 'Síntomas de hoy' : "Today's symptoms"),
                   if (symptoms.todayEntries.isEmpty)
+                    Text(t.noSymptomsYet, style: const TextStyle(color: AppColors.textMuted))
+                  else
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final entry in symptoms.todayEntries)
+                          FadeSlideIn(
+                              offsetY: 8,
+                              child: Chip(
+                                avatar: Icon(entry.type.icon, size: 16, color: AppColors.purple),
+                                label: Text('${entry.type.label} - ${entry.intensity}/5'),
+                                backgroundColor: AppColors.purple.withAlpha(35),
+                                side: BorderSide.none,
+                              )),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+            SpringCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SectionTitle(t.isSpanish ? 'Registro rápido' : 'Quick log'),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      for (final type in SymptomType.values)
+                        ActionChip(
+                          avatar: Icon(type.icon, size: 16, color: AppColors.purple),
+                          label: Text(type.label),
+                          backgroundColor: AppColors.lavender.withAlpha(120),
+                          side: BorderSide.none,
+                          onPressed: () => Navigator.of(context).pushNamed(
+                            AppRoutes.logSymptoms,
+                            arguments: LogSymptomsArgs(preselected: type),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => cycle.togglePeriodDay(today),
+                      icon: Icon(cycle.isPeriodDay(today)
+                          ? Icons.check_circle_rounded
+                          : Icons.water_drop_outlined),
+                      label: Text(cycle.isPeriodDay(today)
+                          ? (t.isSpanish
+                              ? 'Menstruación registrada (toca para deshacer)'
+                              : 'Period logged today (tap to undo)')
+                          : (t.isSpanish
+                              ? 'Mi menstruación empezó hoy'
+                              : 'My period started today')),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppColors.deepPink),
+                      ),
+                      onPressed: () => showIntimacySheet(context, today),
+                      icon: Icon(
+                        hasIntimacyToday ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                        color: AppColors.deepPink,
+                      ),
+                      label: Text(hasIntimacyToday
+                          ? (t.isSpanish
+                              ? 'Relación registrada hoy (toca para editar)'
+                              : 'Intimacy logged today (tap to edit)')
+                          : (t.isSpanish ? 'Registrar relación sexual' : 'Log sexual activity')),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SpringAssistantCard(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CycleHeroCard extends StatelessWidget {
+  const _CycleHeroCard({required this.prediction});
+
+  final CyclePrediction prediction;
+
+  String _countdown(AppLocalizations t) {
+    final days = prediction.daysUntilNextPeriod;
+    if (t.isSpanish) {
+      if (days <= 0) return 'Menstruación esperada hoy';
+      if (days == 1) return 'Menstruación esperada mañana';
+      return 'Próxima menstruación en $days días';
+    } else {
+      if (days <= 0) return 'Period expected today';
+      if (days == 1) return 'Period expected tomorrow';
+      return 'Next period in $days days';
+    }
+  }
+
