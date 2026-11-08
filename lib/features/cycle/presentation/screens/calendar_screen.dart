@@ -586,3 +586,120 @@ class _Legend extends StatelessWidget {
 
     // Número de ejemplo con el color del tipo de día.
     Widget number(Color color) =>
+        Text('12', style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w800));
+
+    return SpringCard(
+      child: Wrap(
+        spacing: 16,
+        runSpacing: 10,
+        children: [
+          item(box(fill: AppColors.deepPink), es ? 'Periodo' : 'Period'),
+          item(box(fill: AppColors.deepPink.withAlpha(90)),
+              es ? 'Días probables de tu periodo' : 'Likely period days'),
+          item(
+              box(
+                  fill: AppColors.softPink.withAlpha(200),
+                  border: AppColors.deepPink.withAlpha(160)),
+              es ? 'Posible inicio' : 'Possible start'),
+          item(box(fill: AppColors.softPink.withAlpha(120)),
+              es ? 'Predicción del periodo' : 'Period prediction'),
+          item(number(AppColors.purple), es ? 'Ventana fértil' : 'Fertile window'),
+          item(const Icon(Icons.local_florist_rounded, size: 14, color: AppColors.purple),
+              es ? 'Ovulación' : 'Ovulation'),
+          item(number(AppColors.normalDay), es ? 'Días normales' : 'Regular days'),
+          item(const _HeartMarker(filled: true, size: 14),
+              es ? 'Relación sin protección' : 'Unprotected sex'),
+          item(const _HeartMarker(filled: false, size: 14),
+              es ? 'Relación con protección' : 'Protected sex'),
+          item(
+            Container(
+                width: 6,
+                height: 6,
+                decoration:
+                    const BoxDecoration(shape: BoxShape.circle, color: AppColors.deepPurple)),
+            es ? 'Síntomas' : 'Symptoms',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SelectedDayCard extends StatelessWidget {
+  const _SelectedDayCard({super.key, required this.date});
+
+  final DateTime date;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final cycle = context.watch<CycleController>();
+    final symptoms = context.watch<SymptomController>();
+    final projection = cycle.projection;
+    final isFuture = date.isAfter(AppDateUtils.today());
+    final flow = cycle.flowFor(date);
+    final entries = symptoms.entriesFor(date);
+    final intimacy = context.watch<IntimacyController>();
+    final intimacyEntry = intimacy.entryFor(date);
+    final risk = intimacy.riskFor(date, projection);
+
+    final status = <String>[
+      if (flow != null)
+        t.isSpanish
+            ? 'Día de menstruación (flujo ${flow.label.toLowerCase()})'
+            : 'Period day (${flow.label.toLowerCase()} flow)',
+      if (flow == null && projection.possibleStartDays.contains(date))
+        t.isSpanish ? 'Posible inicio de tu próximo periodo' : 'Possible start of your next period',
+      if (flow == null && projection.expectedPeriodDays.contains(date))
+        t.isSpanish
+            ? 'Día probable de tu periodo (aún sin registrar)'
+            : 'Likely period day (not logged yet)',
+      if (flow == null &&
+          !projection.possibleStartDays.contains(date) &&
+          !projection.expectedPeriodDays.contains(date) &&
+          projection.predictedPeriodDays.contains(date))
+        t.isSpanish ? 'Menstruación predicha' : 'Predicted period',
+      if (projection.ovulationDays.contains(date))
+        t.isSpanish ? 'Día de ovulación estimado' : 'Estimated ovulation day',
+      if (projection.fertileDays.contains(date) && !projection.ovulationDays.contains(date))
+        t.isSpanish ? 'Ventana fértil (estimado)' : 'Fertile window (estimate)',
+    ];
+
+    return SpringCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(AppDateUtils.longDate(date),
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          if (status.isEmpty && entries.isEmpty && intimacyEntry == null)
+            Text(t.isSpanish ? 'Nada registrado para este día.' : 'Nothing recorded for this day.',
+                style: const TextStyle(color: AppColors.textMuted)),
+          for (final line in status) Text(line),
+          if (entries.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final entry in entries)
+                  Chip(
+                    avatar: Icon(entry.type.icon, size: 16, color: AppColors.purple),
+                    label: Text('${entry.type.label} ${entry.intensity}/5'),
+                    backgroundColor: AppColors.purple.withAlpha(35),
+                    side: BorderSide.none,
+                  ),
+              ],
+            ),
+          ],
+          if (intimacyEntry != null && risk != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: risk.risk.color.withAlpha(22),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
