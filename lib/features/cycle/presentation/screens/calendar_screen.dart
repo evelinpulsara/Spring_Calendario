@@ -311,3 +311,160 @@ class _DayCell extends StatelessWidget {
   final bool isExpectedPeriod;
   final bool isOvulation;
   final bool isFertile;
+  final bool hasSymptoms;
+  final bool hasIntimacy;
+
+  /// Corazón lleno = sin protección; solo contorno = con protección.
+  final bool unprotectedIntimacy;
+  final VoidCallback onTap;
+
+  /// true en pantallas grandes (casillas un poco más redondeadas).
+  final bool wide;
+
+  @override
+  Widget build(BuildContext context) {
+    // Relleno de la casilla: periodo registrado, días probables o predicción.
+    Color? fill;
+    Color? border;
+    final onFill = isPeriod || isExpectedPeriod;
+    if (isPeriod) {
+      fill = AppColors.deepPink;
+    } else if (isExpectedPeriod) {
+      fill = AppColors.deepPink.withAlpha(90);
+    } else if (isPossibleStart) {
+      fill = AppColors.softPink.withAlpha(200);
+      border = AppColors.deepPink.withAlpha(160);
+    } else if (isPredictedPeriod) {
+      fill = AppColors.softPink.withAlpha(120);
+    }
+
+    // Color del número: verde (normal), morado (ventana fértil / ovulación).
+    final Color numberColor;
+    if (onFill) {
+      numberColor = Colors.white;
+    } else if (isPossibleStart || isPredictedPeriod) {
+      numberColor = AppColors.deepPink;
+    } else if (isOvulation || isFertile) {
+      numberColor = AppColors.purple;
+    } else {
+      numberColor = AppColors.normalDay;
+    }
+    final markerColor = onFill ? Colors.white : null;
+    final radius = BorderRadius.circular(wide ? 14 : 12);
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedScale(
+          scale: isSelected ? 1.06 : 1,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutBack,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            margin: EdgeInsets.all(wide ? 3 : 2),
+            decoration: BoxDecoration(
+              color: fill ?? Colors.transparent,
+              borderRadius: radius,
+              border: Border.all(
+                color: isToday
+                    ? AppColors.deepPurple
+                    : isSelected
+                        ? AppColors.purple
+                        : (border ?? Colors.transparent),
+                width: isToday || isSelected ? 2 : 1.5,
+              ),
+              boxShadow: isSelected
+                  ? [BoxShadow(color: AppColors.purple.withAlpha(60), blurRadius: 10)]
+                  : null,
+            ),
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Padding(
+                  padding: const EdgeInsets.all(2),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Marcadores arriba del número: ovulación, relación, síntomas.
+                      SizedBox(
+                        height: 14,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isOvulation)
+                              Icon(Icons.local_florist_rounded,
+                                  size: 13, color: markerColor ?? AppColors.purple),
+                            if (isOvulation && hasIntimacy) const SizedBox(width: 2),
+                            if (hasIntimacy)
+                              TweenAnimationBuilder<double>(
+                                tween: Tween(begin: 0, end: 1),
+                                duration: const Duration(milliseconds: 450),
+                                curve: Curves.elasticOut,
+                                builder: (context, v, child) =>
+                                    Transform.scale(scale: v, child: child),
+                                child: _HeartMarker(
+                                  filled: unprotectedIntimacy,
+                                  color: markerColor ?? AppColors.deepPink,
+                                ),
+                              ),
+                            if ((isOvulation || hasIntimacy) && hasSymptoms)
+                              const SizedBox(width: 2),
+                            if (hasSymptoms)
+                              Container(
+                                width: 5,
+                                height: 5,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: markerColor ?? AppColors.deepPurple,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        '$day',
+                        style: TextStyle(
+                          color: numberColor,
+                          fontSize: 16,
+                          height: 1.15,
+                          fontWeight: isPeriod || isToday ? FontWeight.w800 : FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 12,
+                        child: isToday
+                            ? Text(
+                                AppLanguage.tr('Hoy', 'Today'),
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                  color: onFill ? Colors.white : AppColors.deepPurple,
+                                ),
+                              )
+                            : null,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Resumen del mes visible (solo en computadora, debajo del calendario).
+class _MonthSummary extends StatelessWidget {
+  const _MonthSummary({required this.month});
+
+  final DateTime month;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final cycle = context.watch<CycleController>();
+    final symptoms = context.watch<SymptomController>();
