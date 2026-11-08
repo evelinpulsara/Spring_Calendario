@@ -468,3 +468,121 @@ class _MonthSummary extends StatelessWidget {
     final t = AppLocalizations.of(context);
     final cycle = context.watch<CycleController>();
     final symptoms = context.watch<SymptomController>();
+    final intimacy = context.watch<IntimacyController>();
+    final days = DateTime(month.year, month.month + 1, 0).day;
+
+    var period = 0, withSymptoms = 0, fertile = 0, relations = 0;
+    for (var d = 1; d <= days; d++) {
+      final date = DateTime(month.year, month.month, d);
+      if (cycle.isPeriodDay(date)) period++;
+      if (symptoms.hasSymptoms(date)) withSymptoms++;
+      if (cycle.projection.fertileDays.contains(date)) fertile++;
+      if (intimacy.hasEntry(date)) relations++;
+    }
+
+    Widget tile(IconData icon, Color color, int value, String label) => Expanded(
+          child: SpringCard(
+            margin: EdgeInsets.zero,
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(color: color.withAlpha(35), shape: BoxShape.circle),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TweenAnimationBuilder<double>(
+                        key: ValueKey('$month-$label'),
+                        tween: Tween(begin: 0, end: value.toDouble()),
+                        duration: const Duration(milliseconds: 700),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, v, _) => Text('${v.round()}',
+                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+                      ),
+                      Text(label,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          tile(Icons.water_drop_rounded, AppColors.deepPink, period,
+              t.isSpanish ? 'Días de menstruación' : 'Period days'),
+          const SizedBox(width: 12),
+          tile(Icons.spa_rounded, AppColors.purple, fertile,
+              t.isSpanish ? 'Días fértiles (estimado)' : 'Fertile days (estimate)'),
+          const SizedBox(width: 12),
+          tile(Icons.edit_note_rounded, AppColors.deepPurple, withSymptoms,
+              t.isSpanish ? 'Días con síntomas' : 'Days with symptoms'),
+          const SizedBox(width: 12),
+          tile(Icons.favorite_rounded, AppColors.deepPink, relations,
+              t.isSpanish ? 'Relaciones registradas' : 'Logged intimacy'),
+        ],
+      ),
+    );
+  }
+}
+
+/// Corazón de relación sexual: lleno = sin protección; contorno grueso = con protección.
+class _HeartMarker extends StatelessWidget {
+  const _HeartMarker({required this.filled, this.color = AppColors.deepPink, this.size = 13});
+
+  final bool filled;
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Icon(
+      filled ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+      size: size,
+      color: color,
+      weight: 700,
+    );
+  }
+}
+
+class _Legend extends StatelessWidget {
+  const _Legend();
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final es = t.isSpanish;
+
+    Widget item(Widget marker, String label) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(width: 18, child: Center(child: marker)),
+            const SizedBox(width: 6),
+            Flexible(child: Text(label, style: const TextStyle(fontSize: 12))),
+          ],
+        );
+
+    // Cuadrito redondeado como las casillas del calendario.
+    Widget box({Color? fill, Color? border}) => Container(
+          width: 14,
+          height: 14,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(4),
+            color: fill,
+            border: border != null ? Border.all(color: border, width: 1.5) : null,
+          ),
+        );
+
+    // Número de ejemplo con el color del tipo de día.
+    Widget number(Color color) =>
