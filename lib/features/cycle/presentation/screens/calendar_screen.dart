@@ -154,3 +154,160 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         Expanded(
                           child: Center(
                             child: Text(label,
+                                style: const TextStyle(
+                                    color: AppColors.textMuted, fontWeight: FontWeight.w600)),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  GestureDetector(
+                    onHorizontalDragEnd: (details) {
+                      final v = details.primaryVelocity ?? 0;
+                      if (v < -150) _changeMonth(1);
+                      if (v > 150) _changeMonth(-1);
+                    },
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 380),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.easeInCubic,
+                      layoutBuilder: (current, previous) => Stack(
+                        alignment: Alignment.topCenter,
+                        children: [...previous, if (current != null) current],
+                      ),
+                      transitionBuilder: (child, animation) {
+                        final incoming = child.key == ValueKey(_visibleMonth);
+                        final dx = (incoming ? 0.25 : -0.25) * _direction;
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position:
+                                Tween(begin: Offset(dx, 0), end: Offset.zero).animate(animation),
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: GridView.count(
+                        key: ValueKey(_visibleMonth),
+                        crossAxisCount: 7,
+                        childAspectRatio: wide ? 1.3 : 0.8,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: cells,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _MonthDots(
+                    month: _visibleMonth,
+                    onPrevious: () => _changeMonth(-1),
+                    onNext: () => _changeMonth(1),
+                  ),
+                ],
+              ),
+            ),
+            if (wide) _MonthSummary(month: _visibleMonth),
+          ],
+          sideChildren: [
+            const _Legend(),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 320),
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: SizeTransition(sizeFactor: animation, axisAlignment: -1, child: child),
+              ),
+              child: _SelectedDayCard(key: ValueKey(_selected), date: _selected),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Puntitos con el mes anterior, el actual y el siguiente (se pueden tocar).
+class _MonthDots extends StatelessWidget {
+  const _MonthDots({required this.month, required this.onPrevious, required this.onNext});
+
+  final DateTime month;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget dot(DateTime m, bool current, VoidCallback? onTap) => MouseRegion(
+          cursor: onTap == null ? MouseCursor.defer : SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: onTap,
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    width: current ? 18 : 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: current ? AppColors.deepPink : AppColors.lavender,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    AppDateUtils.monthShort(m),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: current ? FontWeight.w800 : FontWeight.w500,
+                      color: current ? AppColors.deepPink : AppColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        dot(DateTime(month.year, month.month - 1), false, onPrevious),
+        dot(month, true, null),
+        dot(DateTime(month.year, month.month + 1), false, onNext),
+      ],
+    );
+  }
+}
+
+class _DayCell extends StatelessWidget {
+  const _DayCell({
+    this.wide = false,
+    required this.day,
+    required this.isToday,
+    required this.isSelected,
+    required this.isPeriod,
+    required this.isPredictedPeriod,
+    this.isPossibleStart = false,
+    this.isExpectedPeriod = false,
+    required this.isOvulation,
+    required this.isFertile,
+    required this.hasSymptoms,
+    required this.hasIntimacy,
+    this.unprotectedIntimacy = false,
+    required this.onTap,
+  });
+
+  final int day;
+  final bool isToday;
+  final bool isSelected;
+  final bool isPeriod;
+  final bool isPredictedPeriod;
+
+  /// Posible día de inicio del próximo periodo (ventana de la predicción).
+  final bool isPossibleStart;
+
+  /// Día probable del periodo actual, aún sin registrar (rosa opaco).
+  final bool isExpectedPeriod;
+  final bool isOvulation;
+  final bool isFertile;
