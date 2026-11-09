@@ -703,3 +703,82 @@ class _SelectedDayCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Row(
+                    children: [
+                      Icon(intimacyEntry.protection.icon, size: 18, color: AppColors.deepPink),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${t.isSpanish ? 'Relación sexual' : 'Sexual activity'} · ${intimacyEntry.protection.label}',
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (risk.risk != PregnancyRisk.low) ...[
+                    const SizedBox(height: 10),
+                    PregnancyRiskCard(info: risk, compact: true),
+                  ] else ...[
+                    const SizedBox(height: 6),
+                    Text(risk.risk.label,
+                        style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                  ],
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: isFuture ? null : () => cycle.togglePeriodDay(date),
+              icon: Icon(cycle.isPeriodDay(date) ? Icons.close_rounded : Icons.water_drop_rounded),
+              label: Text(cycle.isPeriodDay(date)
+                  ? (t.isSpanish ? 'Quitar marca de menstruación' : 'Remove period mark')
+                  : (t.isSpanish ? 'Marcar como día de menstruación' : 'Mark as period day')),
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: isFuture
+                  ? null
+                  : () => Navigator.of(context).pushNamed(
+                        AppRoutes.logSymptoms,
+                        arguments: LogSymptomsArgs(initialDate: date),
+                      ),
+              icon: const Icon(Icons.edit_note_rounded),
+              label: Text(
+                  t.isSpanish ? 'Registrar síntomas de este día' : 'Log symptoms for this day'),
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(side: const BorderSide(color: AppColors.deepPink)),
+              onPressed: isFuture ? null : () => showIntimacySheet(context, date),
+              icon: Icon(
+                intimacyEntry == null ? Icons.favorite_border_rounded : Icons.favorite_rounded,
+                color: isFuture ? null : AppColors.deepPink,
+              ),
+              label: Text(intimacyEntry == null
+                  ? (t.isSpanish ? 'Registrar relación sexual' : 'Log sexual activity')
+                  : (t.isSpanish ? 'Editar relación registrada' : 'Edit logged activity')),
+            ),
+          ),
+          if (isFuture)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                  t.isSpanish
+                      ? 'Solo puedes registrar hoy o días pasados.'
+                      : 'You can only log today or past days.',
+                  style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+            ),
+        ],
+      ),
+    );
+  }
+}
