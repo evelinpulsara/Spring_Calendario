@@ -180,3 +180,94 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> {
           Text(
             t.isSpanish
                 ? 'Toca un punto para indicar su intensidad (1-5). Tócalo de nuevo para borrarlo.'
+                : 'Tap a dot to set how strong it is (1-5). Tap it again to clear.',
+            style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+          ),
+          const SizedBox(height: 8),
+          _SymptomGrid(
+            columns: wide ? 2 : 1,
+            children: [
+              for (final type in SymptomType.values)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Row(
+                    children: [
+                      Icon(type.icon, color: AppColors.purple),
+                      const SizedBox(width: 12),
+                      Expanded(child: Text(_symptomLabel(type, t))),
+                      _IntensitySelector(
+                        value: _levels[type] ?? 0,
+                        onChanged: (value) => setState(() {
+                          if (value == 0) {
+                            _levels.remove(type);
+                          } else {
+                            _levels[type] = value;
+                          }
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+    final saveButton = ElevatedButton.icon(
+      onPressed: _save,
+      icon: const Icon(Icons.check_rounded),
+      label: Text(t.isSpanish ? 'Guardar' : 'Save'),
+    );
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(t.logSymptomsTitle),
+        automaticallyImplyLeading: widget.isStandalone,
+      ),
+      body: SafeArea(
+        child: wide
+            ? StaggeredListView(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                children: [dateCard, symptomsCard],
+                sideChildren: [flowCard, _DaySummaryCard(flow: _flow, levels: _levels), saveButton],
+              )
+            : StaggeredListView(
+                maxWidth: 760,
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                children: [dateCard, flowCard, symptomsCard, saveButton],
+              ),
+      ),
+    );
+  }
+}
+
+class _IntensitySelector extends StatelessWidget {
+  const _IntensitySelector({required this.value, required this.onChanged});
+
+  final int value;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: List.generate(5, (index) {
+        final level = index + 1;
+        final filled = level <= value;
+        return GestureDetector(
+          onTap: () => onChanged(level == value ? 0 : level),
+          child: Container(
+            width: 26,
+            height: 26,
+            margin: const EdgeInsets.only(left: 6),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: filled ? AppColors.purple : Colors.transparent,
+              border: Border.all(color: AppColors.purple.withAlpha(filled ? 255 : 110), width: 1.5),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+}
+
+/// Lista de síntomas: una columna en celular, dos en computadora.
