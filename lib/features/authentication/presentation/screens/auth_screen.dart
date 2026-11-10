@@ -116,3 +116,55 @@ class _AuthScreenState extends State<AuthScreen> {
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         labelText: AppLanguage.tr('Contraseña', 'Password'),
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        ),
+                      ),
+                      validator: Validators.password,
+                    ),
+                    if (session.errorMessage != null) ...[
+                      const SizedBox(height: 12),
+                      Text(session.errorMessage!,
+                          style: const TextStyle(
+                              color: AppColors.deepPink, fontWeight: FontWeight.w600)),
+                    ],
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: session.isBusy ? null : _submit,
+                      child: session.isBusy
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : Text(_isLogin
+                              ? AppLanguage.tr('Iniciar sesión', 'Log in')
+                              : AppLanguage.tr('Crear cuenta', 'Create account')),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () {
+                        session.clearError();
+                        setState(() => _isLogin = !_isLogin);
+                      },
+                      child: Text(_isLogin
+                          ? AppLanguage.tr(
+                              '¿No tienes cuenta? Regístrate', "Don't have an account? Register")
+                          : AppLanguage.tr('¿Ya tienes cuenta? Inicia sesión',
+                              'Already have an account? Log in')),
+                    ),
+                    if (AppConstants.seedDemoData)
+                      TextButton.icon(
+                        onPressed: _fillDemoCredentials,
+                        icon: const Icon(Icons.auto_awesome_rounded, size: 18),
+                        label: Text(AppLanguage.tr('Usar cuenta de prueba', 'Use demo account')),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ));
+  }
+}
