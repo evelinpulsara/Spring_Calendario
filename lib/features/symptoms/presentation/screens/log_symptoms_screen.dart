@@ -271,3 +271,94 @@ class _IntensitySelector extends StatelessWidget {
 }
 
 /// Lista de síntomas: una columna en celular, dos en computadora.
+class _SymptomGrid extends StatelessWidget {
+  const _SymptomGrid({required this.columns, required this.children});
+
+  final int columns;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    if (columns == 1) return Column(children: children);
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const gap = 12.0;
+        final width = (constraints.maxWidth - gap * (columns - 1)) / columns;
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: [
+            for (final child in children)
+              Container(
+                width: width,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isLight ? AppColors.lavenderSoft : AppColors.night,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: child,
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Resumen de lo que se va a guardar (solo en computadora).
+class _DaySummaryCard extends StatelessWidget {
+  const _DaySummaryCard({required this.flow, required this.levels});
+
+  final FlowIntensity flow;
+  final Map<SymptomType, int> levels;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final selected = levels.entries.where((e) => e.value > 0).toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    return SpringCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionTitle(t.isSpanish ? 'Resumen del día' : 'Day summary'),
+          Row(
+            children: [
+              const Icon(Icons.water_drop_rounded, size: 18, color: AppColors.deepPink),
+              const SizedBox(width: 8),
+              Text('${t.isSpanish ? 'Flujo' : 'Flow'}: ${flow.label}',
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: selected.isEmpty
+                ? Text(
+                    t.isSpanish
+                        ? 'Aún no marcaste síntomas para este día.'
+                        : 'No symptoms selected for this day yet.',
+                    key: const ValueKey('none'),
+                    style: const TextStyle(color: AppColors.textMuted),
+                  )
+                : Wrap(
+                    key: ValueKey(selected.length),
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final e in selected)
+                        Chip(
+                          avatar: Icon(e.key.icon, size: 16, color: AppColors.purple),
+                          label: Text('${e.key.label} ${e.value}/5'),
+                          backgroundColor: AppColors.purple.withAlpha(35),
+                          side: BorderSide.none,
+                        ),
+                    ],
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
