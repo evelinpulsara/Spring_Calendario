@@ -1,3 +1,5 @@
+import 'package:spring_calendario/core/l10n/app_language.dart';
+
 /// How heavy the menstrual flow is on a given day.
 enum FlowIntensity { none, light, medium, heavy }
 
@@ -5,13 +7,13 @@ extension FlowIntensityLabel on FlowIntensity {
   String get label {
     switch (this) {
       case FlowIntensity.none:
-        return 'None';
+        return AppLanguage.tr('Ninguno', 'None');
       case FlowIntensity.light:
-        return 'Light';
+        return AppLanguage.tr('Ligero', 'Light');
       case FlowIntensity.medium:
-        return 'Medium';
+        return AppLanguage.tr('Medio', 'Medium');
       case FlowIntensity.heavy:
-        return 'Heavy';
+        return AppLanguage.tr('Abundante', 'Heavy');
     }
   }
 }

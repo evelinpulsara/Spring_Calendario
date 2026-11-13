@@ -1,3 +1,5 @@
+import 'package:spring_calendario/core/l10n/app_language.dart';
+
 /// Symptoms the user can record.
 enum SymptomType { cramps, headache, mood, bloating, acne, fatigue, appetite, sleep }
 
@@ -5,21 +7,21 @@ extension SymptomTypeLabel on SymptomType {
   String get label {
     switch (this) {
       case SymptomType.cramps:
-        return 'Cramps';
+        return AppLanguage.tr('Cólicos', 'Cramps');
       case SymptomType.headache:
-        return 'Headache';
+        return AppLanguage.tr('Dolor de cabeza', 'Headache');
       case SymptomType.mood:
-        return 'Mood changes';
+        return AppLanguage.tr('Cambios de humor', 'Mood changes');
       case SymptomType.bloating:
-        return 'Bloating';
+        return AppLanguage.tr('Hinchazón', 'Bloating');
       case SymptomType.acne:
-        return 'Acne';
+        return AppLanguage.tr('Acné', 'Acne');
       case SymptomType.fatigue:
-        return 'Fatigue';
+        return AppLanguage.tr('Fatiga', 'Fatigue');
       case SymptomType.appetite:
-        return 'Appetite changes';
+        return AppLanguage.tr('Cambios de apetito', 'Appetite changes');
       case SymptomType.sleep:
-        return 'Sleep problems';
+        return AppLanguage.tr('Problemas de sueño', 'Sleep problems');
     }
   }
 }
