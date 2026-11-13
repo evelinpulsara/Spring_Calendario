@@ -12,12 +12,12 @@ class AppLocalizations {
 
   static AppLocalizations of(BuildContext context) {
     return Localizations.of<AppLocalizations>(context, AppLocalizations) ??
-        const AppLocalizations(Locale('en'));
+        const AppLocalizations(Locale('es'));
   }
 
   static const delegate = _AppLocalizationsDelegate();
 
-  static const supportedLocales = [Locale('en'), Locale('es')];
+  static const supportedLocales = [Locale('es'), Locale('en')];
 
   // ── Strings ─────────────────────────────────────────────────────────────
 
@@ -27,7 +27,7 @@ class AppLocalizations {
   bool get isSpanish => _es;
 
   // Navigation / AppBar titles
-  String get appName        => 'LunaFlow';
+  String get appName        => 'Spring';
   String get dashboard      => _es ? 'Inicio'          : 'Dashboard';
   String get calendar       => _es ? 'Calendario'      : 'Calendar';
   String get insights       => _es ? 'Estadísticas'    : 'Insights';
@@ -61,7 +61,7 @@ class AppLocalizations {
   String get currentPhase   => _es ? 'Fase actual'         : 'Current phase';
   String get topSymptoms    => _es ? 'Síntomas más frecuentes' : 'Top symptoms';
   String get notEnoughData  => _es ? 'Aún no hay suficientes datos.' : 'Not enough data yet.';
-  String get aiInsight      => _es ? 'Sugerencia de Luna'  : 'Luna\'s insight';
+  String get aiInsight      => _es ? 'Sugerencia de Spring' : 'Spring\'s insight';
 
   // Profile / Settings
   String get name           => _es ? 'Nombre'            : 'Name';
@@ -82,13 +82,13 @@ class AppLocalizations {
   String get language       => _es ? 'Idioma'            : 'Language';
   String get privacy        => _es ? 'Privacidad'        : 'Privacy';
   String get privacyNote    => _es
-      ? 'En este prototipo los datos se guardan solo en la memoria de la app y nunca se envían a un servidor.'
-      : 'In this MVP your data is kept only in the app memory and is never sent to a server.';
+      ? 'En este prototipo los datos se guardan solo en la memoria de la app. Cuando pides un consejo al Asistente Spring, se envía un resumen anónimo de tus ciclos, síntomas y relaciones registradas (sin nombre ni correo) a la IA.'
+      : 'In this MVP your data is kept only in the app memory. When you ask Spring Assistant for an insight, an anonymous summary of your cycles, symptoms and logged intimacy (no name or email) is sent to the AI.';
   String get deleteData     => _es ? 'Eliminar todos mis datos' : 'Delete all my data';
   String get deleteConfirmTitle  => _es ? '¿Eliminar todos los datos?' : 'Delete all data?';
   String get deleteConfirmBody   => _es
-      ? 'Todos los días de menstruación y síntomas serán eliminados de este dispositivo.'
-      : 'All period days and symptoms will be removed from this device.';
+      ? 'Todos los días de menstruación, síntomas y relaciones registradas serán eliminados de este dispositivo.'
+      : 'All period days, symptoms and logged intimacy will be removed from this device.';
   String get cancel         => _es ? 'Cancelar'          : 'Cancel';
   String get delete         => _es ? 'Eliminar'          : 'Delete';
   String get saveChanges    => _es ? 'Guardar cambios'   : 'Save changes';
@@ -96,8 +96,8 @@ class AppLocalizations {
   String get dataDeleted    => _es ? 'Tus datos fueron eliminados' : 'Your data was deleted';
   String get logOut         => _es ? 'Cerrar sesión'     : 'Log out';
   String get mvpNote        => _es
-      ? 'Datos guardados localmente. No se envían a ningún servidor.'
-      : 'Data saved locally. Not sent to any server.';
+      ? 'Datos guardados localmente. Solo el Asistente Spring envía un resumen anónimo a la IA.'
+      : 'Data saved locally. Only Spring Assistant sends an anonymous summary to the AI.';
 
   // Log symptoms screen
   String get logSymptomsTitle => _es ? 'Registrar síntomas' : 'Log symptoms';
