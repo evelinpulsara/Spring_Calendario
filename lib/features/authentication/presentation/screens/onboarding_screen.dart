@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:lunaflow/core/routes/app_routes.dart';
-import 'package:lunaflow/core/theme/app_colors.dart';
-import 'package:lunaflow/shared/widgets/moon_widget.dart';
+import 'package:spring_calendario/shared/widgets/responsive.dart';
+import 'package:spring_calendario/core/l10n/app_language.dart';
+import 'package:spring_calendario/core/routes/app_routes.dart';
+import 'package:spring_calendario/core/theme/app_colors.dart';
+import 'package:spring_calendario/shared/widgets/moon_widget.dart';
 
 class _OnboardingPageData {
   const _OnboardingPageData(this.title, this.text, this.moonProgress);
@@ -10,7 +12,7 @@ class _OnboardingPageData {
   final double moonProgress;
 }
 
-/// Explains what LunaFlow does and offers "Get Started" / "I already have an account".
+/// Explains what Spring does and offers "Get Started" / "I already have an account".
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -19,23 +21,41 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  static const _pages = [
-    _OnboardingPageData(
-      'Follow your cycle',
-      'Log your period days and see every phase of your cycle in one calm place.',
-      0.12,
-    ),
-    _OnboardingPageData(
-      'Understand your body',
-      'Track cramps, mood, sleep and more. LunaFlow predicts your next period and fertile window.',
-      0.3,
-    ),
-    _OnboardingPageData(
-      'Meet Luna Assistant',
-      'Get gentle, personalised insights based on the patterns in your own data.',
-      0.5,
-    ),
-  ];
+  static List<_OnboardingPageData> get _pages => AppLanguage.isSpanish
+      ? const [
+          _OnboardingPageData(
+            'Sigue tu ciclo',
+            'Registra tus días de menstruación y mira cada fase de tu ciclo en un solo lugar tranquilo.',
+            0.12,
+          ),
+          _OnboardingPageData(
+            'Entiende tu cuerpo',
+            'Registra cólicos, ánimo, sueño y más. Spring predice tu próxima menstruación y tu ventana fértil.',
+            0.3,
+          ),
+          _OnboardingPageData(
+            'Conoce al Asistente Spring',
+            'Recibe consejos amables y personalizados según los patrones de tus propios datos.',
+            0.5,
+          ),
+        ]
+      : const [
+          _OnboardingPageData(
+            'Follow your cycle',
+            'Log your period days and see every phase of your cycle in one calm place.',
+            0.12,
+          ),
+          _OnboardingPageData(
+            'Understand your body',
+            'Track cramps, mood, sleep and more. Spring predicts your next period and fertile window.',
+            0.3,
+          ),
+          _OnboardingPageData(
+            'Meet Spring Assistant',
+            'Get gentle, personalised insights based on the patterns in your own data.',
+            0.5,
+          ),
+        ];
 
   final PageController _pageController = PageController();
   int _page = 0;
@@ -49,7 +69,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
+        body: SafeArea(
+      child: CenteredContent(
+        maxWidth: 520,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: Column(
@@ -110,19 +132,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () => Navigator.of(context).pushNamed(AppRoutes.auth, arguments: false),
-                  child: const Text('Get Started'),
+                  onPressed: () =>
+                      Navigator.of(context).pushNamed(AppRoutes.auth, arguments: false),
+                  child: Text(AppLanguage.tr('Comenzar', 'Get Started')),
                 ),
               ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () => Navigator.of(context).pushNamed(AppRoutes.auth, arguments: true),
-                child: const Text('I already have an account'),
+                child: Text(AppLanguage.tr('Ya tengo una cuenta', 'I already have an account')),
               ),
             ],
           ),
         ),
       ),
-    );
+    ));
   }
 }
