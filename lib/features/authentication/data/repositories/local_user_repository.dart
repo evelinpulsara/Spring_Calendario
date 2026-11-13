@@ -1,6 +1,7 @@
-import 'package:lunaflow/core/constants/app_constants.dart';
-import 'package:lunaflow/features/authentication/domain/entities/user.dart';
-import 'package:lunaflow/features/authentication/domain/repositories/user_repository.dart';
+import 'package:spring_calendario/core/constants/app_constants.dart';
+import 'package:spring_calendario/features/authentication/domain/entities/user.dart';
+import 'package:spring_calendario/features/authentication/domain/repositories/user_repository.dart';
+import 'package:spring_calendario/core/l10n/app_language.dart';
 
 /// In-memory authentication used by the MVP.
 ///
@@ -33,7 +34,8 @@ class LocalUserRepository implements UserRepository {
     await Future<void>.delayed(_fakeLatency);
     final account = _accounts[email.trim().toLowerCase()];
     if (account == null || account.passwordHash != _hash(password)) {
-      throw const AuthException('Incorrect email or password.');
+      throw AuthException(
+          AppLanguage.tr('Correo o contraseña incorrectos.', 'Incorrect email or password.'));
     }
     _currentUser = account.user;
     return account.user;
@@ -48,7 +50,8 @@ class LocalUserRepository implements UserRepository {
     await Future<void>.delayed(_fakeLatency);
     final key = email.trim().toLowerCase();
     if (_accounts.containsKey(key)) {
-      throw const AuthException('An account with this email already exists.');
+      throw AuthException(AppLanguage.tr(
+          'Ya existe una cuenta con este correo.', 'An account with this email already exists.'));
     }
     final user = User(
       id: 'user-${DateTime.now().millisecondsSinceEpoch}',
