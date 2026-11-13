@@ -1,4 +1,4 @@
-import 'package:lunaflow/features/authentication/domain/entities/user.dart';
+import 'package:spring_calendario/features/authentication/domain/entities/user.dart';
 
 /// Thrown when login or registration fails.
 class AuthException implements Exception {

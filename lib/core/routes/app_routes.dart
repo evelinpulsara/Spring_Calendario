@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:lunaflow/features/authentication/presentation/screens/auth_screen.dart';
-import 'package:lunaflow/features/authentication/presentation/screens/onboarding_screen.dart';
-import 'package:lunaflow/features/authentication/presentation/screens/splash_screen.dart';
-import 'package:lunaflow/features/symptoms/presentation/screens/log_symptoms_screen.dart';
-import 'package:lunaflow/shared/widgets/main_shell.dart';
+import 'package:spring_calendario/features/authentication/presentation/screens/auth_screen.dart';
+import 'package:spring_calendario/features/authentication/presentation/screens/onboarding_screen.dart';
+import 'package:spring_calendario/features/authentication/presentation/screens/splash_screen.dart';
+import 'package:spring_calendario/features/cycle/presentation/screens/cycle_setup_screen.dart';
+import 'package:spring_calendario/features/symptoms/presentation/screens/log_symptoms_screen.dart';
+import 'package:spring_calendario/shared/widgets/animations.dart';
+import 'package:spring_calendario/shared/widgets/main_shell.dart';
 
 /// Named routes and the route generator.
 class AppRoutes {
@@ -14,6 +16,10 @@ class AppRoutes {
   static const String auth = '/auth';
   static const String home = '/home';
   static const String logSymptoms = '/log-symptoms';
+  static const String cycleSetup = '/cycle-setup';
+
+  /// Inicio después de iniciar sesión: cuestionario si es nueva, si no, la app.
+  static String afterLogin(bool cycleSetupCompleted) => cycleSetupCompleted ? home : cycleSetup;
 
   /// `auth` receives a bool argument: true to start in login mode.
   /// `logSymptoms` receives an optional [LogSymptomsArgs].
@@ -37,10 +43,13 @@ class AppRoutes {
           preselected: args?.preselected,
         );
         break;
+      case cycleSetup:
+        page = CycleSetupScreen(isEditing: settings.arguments as bool? ?? false);
+        break;
       case splash:
       default:
         page = const SplashScreen();
     }
-    return MaterialPageRoute<void>(builder: (_) => page, settings: settings);
+    return SoftPageRoute<void>(builder: (_) => page, settings: settings);
   }
 }

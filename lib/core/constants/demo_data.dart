@@ -1,4 +1,4 @@
-import 'package:lunaflow/core/utils/date_utils.dart';
+import 'package:spring_calendario/core/utils/date_utils.dart';
 
 /// Shared helpers used by the in-memory repositories to create demo history.
 class DemoData {

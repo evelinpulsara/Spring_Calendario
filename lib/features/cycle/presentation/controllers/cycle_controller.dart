@@ -1,14 +1,17 @@
 import 'package:flutter/foundation.dart';
-import 'package:lunaflow/core/constants/app_constants.dart';
-import 'package:lunaflow/core/utils/date_utils.dart';
-import 'package:lunaflow/features/authentication/domain/entities/user.dart';
-import 'package:lunaflow/features/cycle/domain/entities/cycle_prediction.dart';
-import 'package:lunaflow/features/cycle/domain/entities/flow_intensity.dart';
-import 'package:lunaflow/features/cycle/domain/entities/menstrual_cycle.dart';
-import 'package:lunaflow/features/cycle/domain/entities/period_entry.dart';
-import 'package:lunaflow/features/cycle/domain/repositories/cycle_repository.dart';
-import 'package:lunaflow/features/cycle/domain/repositories/prediction_repository.dart';
-import 'package:lunaflow/features/cycle/domain/services/cycle_calculator.dart';
+import 'package:spring_calendario/core/constants/app_constants.dart';
+import 'package:spring_calendario/core/utils/date_utils.dart';
+import 'package:spring_calendario/features/authentication/domain/entities/user.dart';
+import 'package:spring_calendario/features/cycle/domain/entities/cycle_prediction.dart';
+import 'package:spring_calendario/features/cycle/domain/entities/flow_intensity.dart';
+import 'package:spring_calendario/features/cycle/domain/entities/menstrual_cycle.dart';
+import 'package:spring_calendario/features/cycle/domain/entities/period_entry.dart';
+import 'package:spring_calendario/features/cycle/domain/entities/period_forecast.dart';
+import 'package:spring_calendario/features/cycle/data/services/local_period_forecast_service.dart';
+import 'package:spring_calendario/features/cycle/domain/services/period_forecast_service.dart';
+import 'package:spring_calendario/features/cycle/domain/repositories/cycle_repository.dart';
+import 'package:spring_calendario/features/cycle/domain/repositories/prediction_repository.dart';
+import 'package:spring_calendario/features/cycle/domain/services/cycle_calculator.dart';
 
 /// State holder for period days, derived cycles and predictions.
 class CycleController extends ChangeNotifier {
@@ -17,15 +20,23 @@ class CycleController extends ChangeNotifier {
     required PredictionRepository predictionRepository,
     required CycleCalculator calculator,
     required User? Function() currentUser,
+    PeriodForecastService forecastService = const LocalPeriodForecastService(),
   })  : _cycleRepository = cycleRepository,
         _predictionRepository = predictionRepository,
         _calculator = calculator,
-        _currentUser = currentUser;
+        _currentUser = currentUser,
+        _forecastService = forecastService;
 
   final CycleRepository _cycleRepository;
   final PredictionRepository _predictionRepository;
   final CycleCalculator _calculator;
   final User? Function() _currentUser;
+  final PeriodForecastService _forecastService;
+
+  PeriodForecast? _forecast;
+  String? _forecastKey;
+  bool _isForecasting = false;
+  int _forecastRequest = 0;
 
   final Map<DateTime, PeriodEntry> _entriesByDate = {};
   List<MenstrualCycle> _cycles = [];
@@ -35,6 +46,12 @@ class CycleController extends ChangeNotifier {
   List<MenstrualCycle> get cycles => _cycles;
   CyclePrediction? get prediction => _prediction;
   CycleProjection get projection => _projection;
+
+  /// Predicción del próximo periodo (de la IA, o local mientras responde).
+  PeriodForecast? get forecast => _forecast;
+
+  /// true mientras la IA está calculando la predicción.
+  bool get isForecasting => _isForecasting;
 
   /// Most recent cycles first.
   List<MenstrualCycle> get recentCycles => _cycles.reversed.take(6).toList();
@@ -64,7 +81,110 @@ class CycleController extends ChangeNotifier {
       fallbackCycleLength: cycleLength,
       fallbackPeriodLength: periodLength,
     );
+
+    final input = _forecastInput(user, cycleLength, periodLength);
+    if (input == null) {
+      _forecast = null;
+      _forecastKey = null;
+    } else if (input.cacheKey == _forecastKey && _forecast != null) {
+      _applyForecast(cycleLength, periodLength);
+    } else {
+      // Primero el cálculo local (inmediato) y luego la IA lo mejora.
+      _forecast = await const LocalPeriodForecastService().forecast(input);
+      _forecastKey = null;
+      _applyForecast(cycleLength, periodLength);
+      _requestForecast(input, cycleLength, periodLength);
+    }
     notifyListeners();
+  }
+
+  /// Vuelve a pedir la predicción a la IA.
+  Future<void> refreshForecast() async {
+    final user = _currentUser();
+    final cycleLength = user?.averageCycleLength ?? AppConstants.defaultCycleLength;
+    final periodLength = user?.averagePeriodDuration ?? AppConstants.defaultPeriodDuration;
+    final input = _forecastInput(user, cycleLength, periodLength);
+    if (input == null) return;
+    await _requestForecast(input, cycleLength, periodLength);
+  }
+
+  ForecastInput? _forecastInput(User? user, int cycleLength, int periodLength) {
+    final baseline = _calculator.predict(
+      cycles: _cycles,
+      today: AppDateUtils.today(),
+      fallbackCycleLength: cycleLength,
+      fallbackPeriodLength: periodLength,
+    );
+    if (baseline == null) return null;
+    return ForecastInput(
+      today: AppDateUtils.today(),
+      ageGroup: user?.ageGroup ?? AgeGroup.unknown,
+      regularity: user?.regularity ?? CycleRegularity.unsure,
+      typicalPeriodLength: periodLength,
+      typicalCycleLength: cycleLength,
+      cycles: _cycles,
+      baseline: baseline,
+    );
+  }
+
+  Future<void> _requestForecast(ForecastInput input, int cycleLength, int periodLength) async {
+    final request = ++_forecastRequest;
+    _isForecasting = true;
+    notifyListeners();
+    try {
+      final result = await _forecastService.forecast(input);
+      if (request != _forecastRequest) return; // llegó una consulta más nueva
+      _forecast = result;
+      _forecastKey = input.cacheKey;
+      _applyForecast(cycleLength, periodLength);
+    } finally {
+      if (request == _forecastRequest) {
+        _isForecasting = false;
+        notifyListeners();
+      }
+    }
+  }
+
+  /// Recalcula predicción y calendario usando la predicción guardada.
+  void _applyForecast(int cycleLength, int periodLength) {
+    final f = _forecast;
+    if (f == null) return;
+    final override = PredictionOverride(
+      earliestStart: f.earliestStart,
+      likelyStart: f.likelyStart,
+      latestStart: f.latestStart,
+      periodLength: f.periodLength,
+      ovulationDate: f.ovulationDate,
+    );
+    _prediction = _calculator.predict(
+      cycles: _cycles,
+      today: AppDateUtils.today(),
+      fallbackCycleLength: cycleLength,
+      fallbackPeriodLength: periodLength,
+      override: override,
+    );
+    _projection = _calculator.project(
+      cycles: _cycles,
+      fallbackCycleLength: cycleLength,
+      fallbackPeriodLength: periodLength,
+      override: override,
+    );
+  }
+
+  /// Registra varios días de menstruación de una vez (cuestionario inicial).
+  Future<void> addPeriodDays(DateTime start, int days) async {
+    final today = AppDateUtils.today();
+    for (var d = 0; d < days; d++) {
+      final day = AppDateUtils.addDays(AppDateUtils.dateOnly(start), d);
+      if (day.isAfter(today)) break;
+      if (isPeriodDay(day)) continue;
+      await _cycleRepository.savePeriodEntry(PeriodEntry(
+        id: 'period-${day.millisecondsSinceEpoch}',
+        date: day,
+        flow: FlowIntensity.medium,
+      ));
+    }
+    await load();
   }
 
   Future<void> setPeriodDay(DateTime date, {FlowIntensity flow = FlowIntensity.medium}) async {

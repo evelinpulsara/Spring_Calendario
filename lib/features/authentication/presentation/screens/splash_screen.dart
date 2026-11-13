@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:lunaflow/core/constants/app_constants.dart';
-import 'package:lunaflow/core/routes/app_routes.dart';
-import 'package:lunaflow/core/theme/app_colors.dart';
-import 'package:lunaflow/features/authentication/presentation/controllers/session_controller.dart';
-import 'package:lunaflow/shared/widgets/moon_widget.dart';
+import 'package:spring_calendario/core/constants/app_constants.dart';
+import 'package:spring_calendario/core/routes/app_routes.dart';
+import 'package:spring_calendario/core/theme/app_colors.dart';
+import 'package:spring_calendario/features/authentication/presentation/controllers/session_controller.dart';
+import 'package:spring_calendario/shared/widgets/moon_widget.dart';
 
 /// Shows the logo with a short animation, then routes to onboarding or home.
 class SplashScreen extends StatefulWidget {
@@ -34,7 +34,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     ]);
     if (!mounted) return;
     Navigator.of(context).pushReplacementNamed(
-      session.isLoggedIn ? AppRoutes.home : AppRoutes.onboarding,
+      session.isLoggedIn
+          ? AppRoutes.afterLogin(session.user!.cycleSetupCompleted)
+          : AppRoutes.onboarding,
     );
   }
 
@@ -71,7 +73,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               ),
             ),
             const SizedBox(height: 8),
-            const Text(AppConstants.tagline, style: TextStyle(color: Colors.white70)),
+            Text(AppConstants.tagline, style: const TextStyle(color: Colors.white70)),
             const SizedBox(height: 48),
             SizedBox(
               width: 160,

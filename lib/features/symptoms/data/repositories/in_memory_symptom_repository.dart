@@ -1,9 +1,9 @@
-import 'package:lunaflow/core/constants/app_constants.dart';
-import 'package:lunaflow/core/constants/demo_data.dart';
-import 'package:lunaflow/core/utils/date_utils.dart';
-import 'package:lunaflow/features/symptoms/domain/entities/symptom_entry.dart';
-import 'package:lunaflow/features/symptoms/domain/entities/symptom_type.dart';
-import 'package:lunaflow/features/symptoms/domain/repositories/symptom_repository.dart';
+import 'package:spring_calendario/core/constants/app_constants.dart';
+import 'package:spring_calendario/core/constants/demo_data.dart';
+import 'package:spring_calendario/core/utils/date_utils.dart';
+import 'package:spring_calendario/features/symptoms/domain/entities/symptom_entry.dart';
+import 'package:spring_calendario/features/symptoms/domain/entities/symptom_type.dart';
+import 'package:spring_calendario/features/symptoms/domain/repositories/symptom_repository.dart';
 
 /// Stores symptoms in memory. Replace with a database/API version later.
 class InMemorySymptomRepository implements SymptomRepository {

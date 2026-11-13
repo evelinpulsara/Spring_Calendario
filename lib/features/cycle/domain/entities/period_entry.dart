@@ -1,4 +1,4 @@
-import 'package:lunaflow/features/cycle/domain/entities/flow_intensity.dart';
+import 'package:spring_calendario/features/cycle/domain/entities/flow_intensity.dart';
 
 /// One logged day of menstrual bleeding.
 class PeriodEntry {

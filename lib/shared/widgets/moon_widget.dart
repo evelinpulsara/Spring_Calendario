@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:lunaflow/core/theme/app_colors.dart';
+import 'package:spring_calendario/core/theme/app_colors.dart';
 
 /// Minimal moon illustration. [progress] goes from 0 (new moon) through
 /// 0.5 (full moon) back to 1 (new moon), mirroring a cycle.

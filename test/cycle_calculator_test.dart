@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lunaflow/features/cycle/domain/entities/flow_intensity.dart';
-import 'package:lunaflow/features/cycle/domain/entities/period_entry.dart';
-import 'package:lunaflow/features/cycle/domain/services/cycle_calculator.dart';
+import 'package:spring_calendario/features/cycle/domain/entities/flow_intensity.dart';
+import 'package:spring_calendario/features/cycle/domain/entities/period_entry.dart';
+import 'package:spring_calendario/features/cycle/domain/services/cycle_calculator.dart';
 
 PeriodEntry _day(DateTime date) =>
     PeriodEntry(id: date.toIso8601String(), date: date, flow: FlowIntensity.medium);

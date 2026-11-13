@@ -1,4 +1,4 @@
-import 'package:lunaflow/features/cycle/domain/entities/period_entry.dart';
+import 'package:spring_calendario/features/cycle/domain/entities/period_entry.dart';
 
 /// Contract for period data. Implement with Supabase, Firebase or a REST API.
 abstract class CycleRepository {

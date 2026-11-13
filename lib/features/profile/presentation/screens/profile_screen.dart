@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:lunaflow/core/constants/app_constants.dart';
-import 'package:lunaflow/core/l10n/app_localizations.dart';
-import 'package:lunaflow/core/l10n/locale_controller.dart';
-import 'package:lunaflow/core/routes/app_routes.dart';
-import 'package:lunaflow/core/theme/app_colors.dart';
-import 'package:lunaflow/core/theme/theme_controller.dart';
-import 'package:lunaflow/features/authentication/domain/entities/user.dart';
-import 'package:lunaflow/features/authentication/presentation/controllers/session_controller.dart';
-import 'package:lunaflow/features/cycle/presentation/controllers/cycle_controller.dart';
-import 'package:lunaflow/features/symptoms/presentation/controllers/symptom_controller.dart';
-import 'package:lunaflow/shared/widgets/lunar_card.dart';
-import 'package:lunaflow/shared/widgets/section_title.dart';
+import 'package:spring_calendario/core/constants/app_constants.dart';
+import 'package:spring_calendario/core/l10n/app_localizations.dart';
+import 'package:spring_calendario/core/l10n/locale_controller.dart';
+import 'package:spring_calendario/core/routes/app_routes.dart';
+import 'package:spring_calendario/core/theme/app_colors.dart';
+import 'package:spring_calendario/core/theme/theme_controller.dart';
+import 'package:spring_calendario/features/authentication/domain/entities/user.dart';
+import 'package:spring_calendario/features/authentication/presentation/controllers/session_controller.dart';
+import 'package:spring_calendario/features/cycle/presentation/controllers/cycle_controller.dart';
+import 'package:spring_calendario/features/intimacy/presentation/controllers/intimacy_controller.dart';
+import 'package:spring_calendario/features/symptoms/presentation/controllers/symptom_controller.dart';
+import 'package:spring_calendario/shared/widgets/responsive.dart';
+import 'package:spring_calendario/shared/widgets/spring_card.dart';
+import 'package:spring_calendario/shared/widgets/section_title.dart';
 
 /// Profile and settings: personal info, cycle defaults, notifications,
 /// theme, language and privacy.
@@ -65,6 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final t = AppLocalizations.of(context);
     final cycle = context.read<CycleController>();
     final symptoms = context.read<SymptomController>();
+    final intimacy = context.read<IntimacyController>();
     final messenger = ScaffoldMessenger.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
@@ -87,6 +90,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (confirmed != true) return;
     await cycle.clearData();
     await symptoms.clearData();
+    await intimacy.clearData();
     messenger.showSnackBar(SnackBar(content: Text(t.dataDeleted)));
   }
 
@@ -106,11 +110,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(t.settings)),
       body: SafeArea(
-        child: ListView(
+        child: StaggeredListView(
+          mainFlex: 1,
+          sideFlex: 1,
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
           children: [
             // ── Avatar / name ──────────────────────────────────────────
-            LunarCard(
+            SpringCard(
               child: Column(
                 children: [
                   CircleAvatar(
@@ -141,37 +147,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
 
             // ── Cycle settings ─────────────────────────────────────────
-            LunarCard(
+            SpringCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SectionTitle(t.cycleSettings),
                   Text('${t.avgCycleLen}: ${_cycleLength.round()} ${t.days_label}'),
                   Slider(
-                    value: _cycleLength,
-                    min: 21,
-                    max: 40,
-                    divisions: 19,
+                    value: _cycleLength.clamp(20, 45),
+                    min: 20,
+                    max: 45,
+                    divisions: 25,
                     onChanged: (v) => setState(() => _cycleLength = v),
                   ),
                   Text('${t.avgPeriodDur}: ${_periodDuration.round()} ${t.days_label}'),
                   Slider(
-                    value: _periodDuration,
-                    min: 2,
+                    value: _periodDuration.clamp(1, 10),
+                    min: 1,
                     max: 10,
-                    divisions: 8,
+                    divisions: 9,
                     onChanged: (v) => setState(() => _periodDuration = v),
                   ),
                   Text(
                     t.mvpNote,
                     style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                   ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.of(context)
+                          .pushNamed(AppRoutes.cycleSetup, arguments: true)
+                          .then((_) {
+                        if (!mounted) return;
+                        final user = context.read<SessionController>().user;
+                        if (user == null) return;
+                        setState(() {
+                          _cycleLength = user.averageCycleLength.toDouble();
+                          _periodDuration = user.averagePeriodDuration.toDouble();
+                        });
+                      }),
+                      icon: const Icon(Icons.quiz_rounded),
+                      label: Text(t.isSpanish
+                          ? 'Responder de nuevo las preguntas de mi ciclo'
+                          : 'Answer my cycle questions again'),
+                    ),
+                  ),
                 ],
               ),
             ),
 
             // ── Notifications ──────────────────────────────────────────
-            LunarCard(
+            SpringCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -207,7 +234,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
 
             // ── Theme ──────────────────────────────────────────────────
-            LunarCard(
+          ],
+          sideChildren: [
+            SpringCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -233,7 +262,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
 
             // ── Language / Idioma ──────────────────────────────────────
-            LunarCard(
+            SpringCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -266,7 +295,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
 
             // ── Privacy ────────────────────────────────────────────────
-            LunarCard(
+            SpringCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

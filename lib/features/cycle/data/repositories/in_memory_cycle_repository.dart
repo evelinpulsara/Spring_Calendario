@@ -1,9 +1,9 @@
-import 'package:lunaflow/core/constants/app_constants.dart';
-import 'package:lunaflow/core/constants/demo_data.dart';
-import 'package:lunaflow/core/utils/date_utils.dart';
-import 'package:lunaflow/features/cycle/domain/entities/flow_intensity.dart';
-import 'package:lunaflow/features/cycle/domain/entities/period_entry.dart';
-import 'package:lunaflow/features/cycle/domain/repositories/cycle_repository.dart';
+import 'package:spring_calendario/core/constants/app_constants.dart';
+import 'package:spring_calendario/core/constants/demo_data.dart';
+import 'package:spring_calendario/core/utils/date_utils.dart';
+import 'package:spring_calendario/features/cycle/domain/entities/flow_intensity.dart';
+import 'package:spring_calendario/features/cycle/domain/entities/period_entry.dart';
+import 'package:spring_calendario/features/cycle/domain/repositories/cycle_repository.dart';
 
 /// Stores period entries in memory. Replace with a database/API version later.
 class InMemoryCycleRepository implements CycleRepository {

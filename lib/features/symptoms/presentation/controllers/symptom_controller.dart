@@ -1,14 +1,15 @@
 import 'package:flutter/foundation.dart';
-import 'package:lunaflow/core/utils/date_utils.dart';
-import 'package:lunaflow/features/cycle/domain/entities/cycle_prediction.dart';
-import 'package:lunaflow/features/cycle/domain/entities/menstrual_cycle.dart';
-import 'package:lunaflow/features/symptoms/domain/entities/ai_insight.dart';
-import 'package:lunaflow/features/symptoms/domain/entities/symptom_entry.dart';
-import 'package:lunaflow/features/symptoms/domain/entities/symptom_type.dart';
-import 'package:lunaflow/features/symptoms/domain/repositories/symptom_repository.dart';
-import 'package:lunaflow/features/symptoms/domain/services/ai_insight_service.dart';
+import 'package:spring_calendario/core/utils/date_utils.dart';
+import 'package:spring_calendario/features/cycle/domain/entities/cycle_prediction.dart';
+import 'package:spring_calendario/features/cycle/domain/entities/menstrual_cycle.dart';
+import 'package:spring_calendario/features/intimacy/domain/services/pregnancy_risk.dart';
+import 'package:spring_calendario/features/symptoms/domain/entities/ai_insight.dart';
+import 'package:spring_calendario/features/symptoms/domain/entities/symptom_entry.dart';
+import 'package:spring_calendario/features/symptoms/domain/entities/symptom_type.dart';
+import 'package:spring_calendario/features/symptoms/domain/repositories/symptom_repository.dart';
+import 'package:spring_calendario/features/symptoms/domain/services/ai_insight_service.dart';
 
-/// State holder for symptoms and the Luna Assistant insight.
+/// State holder for symptoms and the Spring Assistant insight.
 class SymptomController extends ChangeNotifier {
   SymptomController({
     required SymptomRepository repository,
@@ -67,6 +68,7 @@ class SymptomController extends ChangeNotifier {
   Future<void> generateInsight({
     required List<MenstrualCycle> cycles,
     CyclePrediction? prediction,
+    List<IntimacyRiskInfo> intimacy = const [],
   }) async {
     _isGenerating = true;
     notifyListeners();
@@ -75,6 +77,7 @@ class SymptomController extends ChangeNotifier {
         symptoms: _entries,
         cycles: cycles,
         prediction: prediction,
+        intimacy: intimacy,
       );
     } finally {
       _isGenerating = false;

@@ -1,5 +1,5 @@
-import 'package:lunaflow/features/cycle/domain/entities/cycle_prediction.dart';
-import 'package:lunaflow/features/cycle/domain/services/cycle_calculator.dart';
+import 'package:spring_calendario/features/cycle/domain/entities/cycle_prediction.dart';
+import 'package:spring_calendario/features/cycle/domain/services/cycle_calculator.dart';
 
 /// Contract for predictions. It can be computed locally or by a backend.
 abstract class PredictionRepository {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:lunaflow/app.dart';
-import 'package:lunaflow/core/di/app_dependencies.dart';
+import 'package:spring_calendario/app.dart';
+import 'package:spring_calendario/core/di/app_dependencies.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(LunaFlowApp(dependencies: AppDependencies()));
+  runApp(SpringApp(dependencies: AppDependencies()));
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lunaflow/features/symptoms/domain/entities/symptom_type.dart';
+import 'package:spring_calendario/features/symptoms/domain/entities/symptom_type.dart';
 
 /// Icons for each symptom (kept in the presentation layer on purpose).
 extension SymptomTypeVisuals on SymptomType {

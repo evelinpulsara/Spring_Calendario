@@ -1,8 +1,8 @@
-import 'package:lunaflow/core/utils/date_utils.dart';
-import 'package:lunaflow/features/cycle/domain/entities/cycle_prediction.dart';
-import 'package:lunaflow/features/cycle/domain/repositories/cycle_repository.dart';
-import 'package:lunaflow/features/cycle/domain/repositories/prediction_repository.dart';
-import 'package:lunaflow/features/cycle/domain/services/cycle_calculator.dart';
+import 'package:spring_calendario/core/utils/date_utils.dart';
+import 'package:spring_calendario/features/cycle/domain/entities/cycle_prediction.dart';
+import 'package:spring_calendario/features/cycle/domain/repositories/cycle_repository.dart';
+import 'package:spring_calendario/features/cycle/domain/repositories/prediction_repository.dart';
+import 'package:spring_calendario/features/cycle/domain/services/cycle_calculator.dart';
 
 /// Computes predictions on the device from the stored period entries.
 /// A backend-powered version can implement the same interface.

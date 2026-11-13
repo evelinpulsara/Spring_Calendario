@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:lunaflow/core/l10n/app_localizations.dart';
-import 'package:lunaflow/core/theme/app_colors.dart';
-import 'package:lunaflow/core/utils/date_utils.dart';
-import 'package:lunaflow/features/cycle/domain/entities/cycle_phase.dart';
-import 'package:lunaflow/features/cycle/presentation/controllers/cycle_controller.dart';
-import 'package:lunaflow/features/symptoms/domain/entities/symptom_type.dart';
-import 'package:lunaflow/features/symptoms/presentation/controllers/symptom_controller.dart';
-import 'package:lunaflow/features/symptoms/presentation/widgets/luna_assistant_card.dart';
-import 'package:lunaflow/features/symptoms/presentation/widgets/symptom_visuals.dart';
-import 'package:lunaflow/shared/widgets/lunar_card.dart';
-import 'package:lunaflow/shared/widgets/section_title.dart';
-import 'package:lunaflow/shared/widgets/stat_tile.dart';
+import 'package:spring_calendario/core/l10n/app_localizations.dart';
+import 'package:spring_calendario/core/theme/app_colors.dart';
+import 'package:spring_calendario/core/utils/date_utils.dart';
+import 'package:spring_calendario/features/cycle/domain/entities/cycle_phase.dart';
+import 'package:spring_calendario/features/cycle/presentation/controllers/cycle_controller.dart';
+import 'package:spring_calendario/features/symptoms/domain/entities/symptom_type.dart';
+import 'package:spring_calendario/features/symptoms/presentation/controllers/symptom_controller.dart';
+import 'package:spring_calendario/features/symptoms/presentation/widgets/spring_assistant_card.dart';
+import 'package:spring_calendario/features/symptoms/presentation/widgets/symptom_visuals.dart';
+import 'package:spring_calendario/shared/widgets/responsive.dart';
+import 'package:spring_calendario/shared/widgets/spring_card.dart';
+import 'package:spring_calendario/shared/widgets/section_title.dart';
+import 'package:spring_calendario/shared/widgets/stat_tile.dart';
 
 /// Simple calculated statistics about the user's cycles and symptoms.
 class InsightsScreen extends StatelessWidget {
@@ -31,7 +32,7 @@ class InsightsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(t.insights)),
       body: SafeArea(
-        child: ListView(
+        child: StaggeredListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
           children: [
             Row(
@@ -59,7 +60,7 @@ class InsightsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             if (prediction != null)
-              LunarCard(
+              SpringCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -74,7 +75,7 @@ class InsightsScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            LunarCard(
+            SpringCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -95,12 +96,17 @@ class InsightsScreen extends StatelessWidget {
                           Expanded(
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child: LinearProgressIndicator(
-                                value: item.value / maxCount,
-                                minHeight: 10,
-                                backgroundColor: AppColors.lavender,
-                                valueColor:
-                                    const AlwaysStoppedAnimation<Color>(AppColors.purple),
+                              child: TweenAnimationBuilder<double>(
+                                tween: Tween(begin: 0, end: item.value / maxCount),
+                                duration: const Duration(milliseconds: 900),
+                                curve: Curves.easeOutCubic,
+                                builder: (context, value, _) => LinearProgressIndicator(
+                                  value: value,
+                                  minHeight: 10,
+                                  backgroundColor: AppColors.lavender,
+                                  valueColor:
+                                      const AlwaysStoppedAnimation<Color>(AppColors.purple),
+                                ),
                               ),
                             ),
                           ),
@@ -112,7 +118,7 @@ class InsightsScreen extends StatelessWidget {
                 ],
               ),
             ),
-            LunarCard(
+            SpringCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -143,7 +149,9 @@ class InsightsScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const LunaAssistantCard(),
+          ],
+          sideChildren: [
+            const SpringAssistantCard(),
           ],
         ),
       ),

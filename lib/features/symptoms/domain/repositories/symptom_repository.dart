@@ -1,4 +1,4 @@
-import 'package:lunaflow/features/symptoms/domain/entities/symptom_entry.dart';
+import 'package:spring_calendario/features/symptoms/domain/entities/symptom_entry.dart';
 
 /// Contract for symptom data. Implement with Supabase, Firebase or a REST API.
 abstract class SymptomRepository {

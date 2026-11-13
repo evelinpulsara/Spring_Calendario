@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lunaflow/core/theme/app_colors.dart';
-import 'package:lunaflow/shared/widgets/lunar_card.dart';
+import 'package:spring_calendario/core/theme/app_colors.dart';
+import 'package:spring_calendario/shared/widgets/spring_card.dart';
 
 /// Small card with an icon, a value and a label.
 class StatTile extends StatelessWidget {
@@ -12,7 +12,7 @@ class StatTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LunarCard(
+    return SpringCard(
       margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(14),
       child: Column(
