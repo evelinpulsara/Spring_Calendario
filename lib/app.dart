@@ -5,6 +5,7 @@ import 'package:spring_calendario/core/constants/app_constants.dart';
 import 'package:spring_calendario/core/di/app_dependencies.dart';
 import 'package:spring_calendario/core/l10n/app_localizations.dart';
 import 'package:spring_calendario/core/l10n/locale_controller.dart';
+import 'package:spring_calendario/core/realtime/realtime_service.dart';
 import 'package:spring_calendario/core/routes/app_routes.dart';
 import 'package:spring_calendario/core/theme/app_theme.dart';
 import 'package:spring_calendario/core/theme/theme_controller.dart';
@@ -31,6 +32,7 @@ class SpringApp extends StatelessWidget {
         ChangeNotifierProvider<ThemeController>.value(value: dependencies.themeController),
         ChangeNotifierProvider<LocaleController>.value(value: dependencies.localeController),
         ChangeNotifierProvider<IntimacyController>.value(value: dependencies.intimacyController),
+        ChangeNotifierProvider<RealtimeService>.value(value: dependencies.realtimeService),
       ],
       child: const _SpringMaterialApp(),
     );

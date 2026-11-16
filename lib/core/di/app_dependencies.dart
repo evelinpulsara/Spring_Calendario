@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:spring_calendario/core/config/api_config.dart';
 import 'package:spring_calendario/core/l10n/locale_controller.dart';
 import 'package:spring_calendario/core/network/api_client.dart';
+import 'package:spring_calendario/core/realtime/realtime_service.dart';
 import 'package:spring_calendario/features/authentication/data/repositories/api_user_repository.dart';
 import 'package:spring_calendario/features/cycle/data/repositories/api_cycle_repository.dart';
 import 'package:spring_calendario/features/intimacy/data/repositories/api_intimacy_repository.dart';
@@ -40,6 +43,7 @@ class AppDependencies {
     required this.themeController,
     required this.localeController,
     required this.intimacyController,
+    required this.realtimeService,
   });
 
   /// [useBackend]: true = datos en la base de datos (a través del backend);
@@ -88,11 +92,38 @@ class AppDependencies {
       aiInsightService: aiInsightService,
     );
 
+    final intimacy = IntimacyController(repository: intimacyRepository);
+
+    // >>> TIEMPO REAL (SSE): si la usuaria cambia algo en otro dispositivo o
+    // pestaña, el backend avisa y aquí se recarga solo lo que cambió.
+    final realtime = RealtimeService(api);
+    if (useBackend) {
+      final pending = <RealtimeResource>{};
+      Timer? debounce;
+      realtime.changes.listen((event) {
+        // Debounce: varios cambios seguidos (ej. guardar 3 síntomas) = 1 recarga.
+        pending.add(event.resource);
+        debounce?.cancel();
+        debounce = Timer(const Duration(milliseconds: 300), () {
+          final all = pending.contains(RealtimeResource.all);
+          void reload(String what, Future<void> Function() load) =>
+              load().catchError((Object e) => debugPrint('No se pudo recargar $what: $e'));
+          if (all || pending.contains(RealtimeResource.periodDays)) reload('el ciclo', cycle.load);
+          if (all || pending.contains(RealtimeResource.symptoms)) reload('los síntomas', symptoms.load);
+          if (all || pending.contains(RealtimeResource.intimacy)) reload('las relaciones', intimacy.load);
+          pending.clear();
+        });
+      });
+    }
+
     // Predictions depend on the profile (fallback cycle/period length).
     session.addListener(() {
       // Solo con sesión iniciada (sin token el backend respondería 401).
       if (session.isLoggedIn) {
         cycle.load().catchError((Object e) => debugPrint('No se pudo cargar el ciclo: $e'));
+        if (useBackend) realtime.start();
+      } else {
+        realtime.stop();
       }
     });
 
@@ -102,7 +133,8 @@ class AppDependencies {
       symptomController: symptoms,
       themeController: ThemeController(),
       localeController: LocaleController(),
-      intimacyController: IntimacyController(repository: intimacyRepository),
+      intimacyController: intimacy,
+      realtimeService: realtime,
     );
   }
 
@@ -112,4 +144,5 @@ class AppDependencies {
   final ThemeController themeController;
   final LocaleController localeController;
   final IntimacyController intimacyController;
+  final RealtimeService realtimeService;
 }
