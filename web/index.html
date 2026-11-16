@@ -1,46 +1,91 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
   <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
+    $FLUTTER_BASE_HREF lo reemplaza `flutter build web --base-href` (por defecto "/").
   -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Spring: sigue tu ciclo menstrual, síntomas y predicciones día a día.">
+  <meta name="theme-color" content="#8E6BE8">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="spring_calendario">
+  <meta name="apple-mobile-web-app-title" content="Spring">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
-
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>spring_calendario</title>
+  <title>Spring</title>
   <link rel="manifest" href="manifest.json">
+
+  <!--
+    Patrón de rendering (tema 4): la app es CSR (Client-Side Rendering) porque
+    es un panel privado con sesión, sin necesidad de SEO. Su punto débil es el
+    FCP: el navegador no pinta nada hasta descargar y ejecutar main.dart.js.
+    Para mejorarlo, este esqueleto es HTML/CSS ESTÁTICO generado en el build
+    (como SSG): se pinta de inmediato desde la CDN de Vercel y se quita cuando
+    Flutter dibuja su primer frame.
+  -->
+  <style>
+    html, body { margin: 0; height: 100%; background: #FAF8FF; }
+    #shell {
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(180deg, #F4F0FF 0%, #FAF8FF 100%);
+      color: #5B3FA0; transition: opacity .25s ease;
+    }
+    #shell .moon {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #FFF7E8 0 55%, #E9E3FF 56%);
+      box-shadow: 0 8px 24px rgba(142, 107, 232, .35);
+      /* transform/opacity: animación en el Compositor Thread, no bloquea el Main Thread */
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    #shell h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: .2px; }
+    #shell p { margin: 0; color: #7A7192; font-size: 15px; }
+    @keyframes pulse { 50% { transform: scale(.92); opacity: .75; } }
+    @media (prefers-color-scheme: dark) {
+      html, body { background: #241C3D; }
+      #shell { background: #241C3D; color: #E9E3FF; }
+      #shell p { color: #B9AED6; }
+    }
+    @media (prefers-reduced-motion: reduce) { #shell .moon { animation: none; } }
+  </style>
+
+  <!-- Métricas INP / FCP (tema 1). Se carga antes que Flutter para medir todo. -->
+  <script src="perf/web_vitals.js"></script>
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
+  <div id="shell" aria-busy="true">
+    <div class="moon" aria-hidden="true"></div>
+    <h1>Spring</h1>
+    <p>Sigue tu ciclo, día a día.</p>
+  </div>
 
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
+  <script>
+    // Quita el esqueleto cuando Flutter pinta su primer frame.
+    window.addEventListener('flutter-first-frame', function () {
+      var shell = document.getElementById('shell');
+      if (!shell) return;
+      shell.style.opacity = '0';
+      setTimeout(function () { shell.remove(); }, 300);
+    });
+
+    // Service Worker (tema 3): la app abre sin internet. Se registra después
+    // de cargar para no competir con la descarga de la app.
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').then(function () {
+          if (window.springVitals) window.springVitals.serviceWorker = true;
+        }).catch(function () {});
+      });
+    }
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

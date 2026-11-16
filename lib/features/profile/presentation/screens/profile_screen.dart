@@ -6,10 +6,12 @@ import 'package:spring_calendario/core/l10n/locale_controller.dart';
 import 'package:spring_calendario/core/routes/app_routes.dart';
 import 'package:spring_calendario/core/theme/app_colors.dart';
 import 'package:spring_calendario/core/theme/theme_controller.dart';
+import 'package:spring_calendario/core/web/browser_features.dart';
 import 'package:spring_calendario/features/authentication/domain/entities/user.dart';
 import 'package:spring_calendario/features/authentication/presentation/controllers/session_controller.dart';
 import 'package:spring_calendario/features/cycle/presentation/controllers/cycle_controller.dart';
 import 'package:spring_calendario/features/intimacy/presentation/controllers/intimacy_controller.dart';
+import 'package:spring_calendario/features/profile/presentation/widgets/tech_panel_card.dart';
 import 'package:spring_calendario/features/symptoms/presentation/controllers/symptom_controller.dart';
 import 'package:spring_calendario/shared/widgets/responsive.dart';
 import 'package:spring_calendario/shared/widgets/spring_card.dart';
@@ -293,6 +295,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
+
+            // ── Rendimiento y tiempo real (temas del curso, solo web) ─────
+            if (BrowserFeatures.isWeb) const TechPanelCard(),
 
             // ── Privacy ────────────────────────────────────────────────
             SpringCard(

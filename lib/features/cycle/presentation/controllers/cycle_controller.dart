@@ -44,6 +44,10 @@ class CycleController extends ChangeNotifier {
   CycleProjection _projection = CycleProjection.empty;
 
   List<MenstrualCycle> get cycles => _cycles;
+
+  /// Días de periodo registrados, ordenados por fecha (para exportar).
+  List<PeriodEntry> get periodEntries =>
+      _entriesByDate.values.toList()..sort((a, b) => a.date.compareTo(b.date));
   CyclePrediction? get prediction => _prediction;
   CycleProjection get projection => _projection;
 
