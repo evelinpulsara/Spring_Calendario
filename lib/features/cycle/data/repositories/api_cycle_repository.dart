@@ -1,4 +1,5 @@
 import 'package:spring_calendario/core/network/api_client.dart';
+import 'package:spring_calendario/core/network/json_parse.dart';
 import 'package:spring_calendario/features/cycle/domain/entities/flow_intensity.dart';
 import 'package:spring_calendario/features/cycle/domain/entities/period_entry.dart';
 import 'package:spring_calendario/features/cycle/domain/repositories/cycle_repository.dart';
@@ -11,13 +12,14 @@ class ApiCycleRepository implements CycleRepository {
 
   @override
   Future<List<PeriodEntry>> getPeriodEntries() async {
-    final list = await _api.get('/api/period-days') as List<dynamic>;
+    // Se parsea según el contrato (PeriodDay en openapi.yaml).
+    final list = JsonObject.parseList(await _api.get('/api/period-days'), 'period-days');
     return [
-      for (final j in list.cast<Map<String, dynamic>>())
+      for (final j in list)
         PeriodEntry(
-          id: 'period-${j['date']}',
-          date: DateTime.parse(j['date'] as String),
-          flow: FlowIntensity.values.asNameMap()[j['flow']] ?? FlowIntensity.medium,
+          id: 'period-${j.string('date')}',
+          date: j.date('date'),
+          flow: j.enumValue('flow', FlowIntensity.values),
         ),
     ];
   }

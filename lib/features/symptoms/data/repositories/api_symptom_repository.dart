@@ -1,4 +1,5 @@
 import 'package:spring_calendario/core/network/api_client.dart';
+import 'package:spring_calendario/core/network/json_parse.dart';
 import 'package:spring_calendario/features/symptoms/domain/entities/symptom_entry.dart';
 import 'package:spring_calendario/features/symptoms/domain/entities/symptom_type.dart';
 import 'package:spring_calendario/features/symptoms/domain/repositories/symptom_repository.dart';
@@ -11,17 +12,16 @@ class ApiSymptomRepository implements SymptomRepository {
 
   @override
   Future<List<SymptomEntry>> getAllEntries() async {
-    final list = await _api.get('/api/symptoms') as List<dynamic>;
-    final types = SymptomType.values.asNameMap();
+    // Se parsea según el contrato (Symptom en openapi.yaml).
+    final list = JsonObject.parseList(await _api.get('/api/symptoms'), 'symptoms');
     return [
-      for (final j in list.cast<Map<String, dynamic>>())
-        if (types[j['type']] != null)
-          SymptomEntry(
-            id: '${j['date']}-${j['type']}',
-            date: DateTime.parse(j['date'] as String),
-            type: types[j['type']]!,
-            intensity: (j['intensity'] as num).toInt(),
-          ),
+      for (final j in list)
+        SymptomEntry(
+          id: '${j.string('date')}-${j.string('type')}',
+          date: j.date('date'),
+          type: j.enumValue('type', SymptomType.values),
+          intensity: j.integer('intensity', min: 1, max: 5),
+        ),
     ];
   }
 
