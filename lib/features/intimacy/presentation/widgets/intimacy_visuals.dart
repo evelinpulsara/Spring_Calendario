@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:spring_calendario/core/l10n/app_language.dart';
 import 'package:spring_calendario/core/theme/app_colors.dart';
 import 'package:spring_calendario/features/intimacy/domain/entities/intimacy_entry.dart';

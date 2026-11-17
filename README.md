@@ -1,48 +1,46 @@
-# Spring Calendario (Frontend)
+# Spring — Frontend
 
-App Flutter para seguir el ciclo menstrual, síntomas y bienestar, con un asistente
-de IA. Funciona como app en el celular y como página web en la computadora.
+Spring es una app para seguir el ciclo menstrual: registra periodos, síntomas y relaciones,
+predice el próximo periodo con IA y se sincroniza en vivo entre celular y computadora.
 
-Backend (Spring Boot + PostgreSQL + Gemini): https://github.com/evelinpulsara/Spring_Backend
+- **App en línea:** https://spring-calendario.vercel.app
+- **Cuenta demo:** `demo@spring.app` / `Spring1234` (ya tiene varios meses de datos)
+- **Backend:** https://github.com/evelinpulsara/Spring_Backend
 
-## Correr en tu computadora
+> La primera carga puede tardar unos 50 s mientras el servidor gratuito de Render se enciende.
 
-1. Enciende el backend (ver su README):
-   ```bash
-   cd ../backend && ./mvnw spring-boot:run
-   ```
-2. Corre la app:
-   ```bash
-   flutter pub get
-   flutter run -d chrome
-   ```
-3. Entra con la cuenta de prueba **demo@spring.app / Spring1234** o crea una cuenta.
+## Cómo funciona
 
-Por defecto la app usa el backend en `http://localhost:8080`. Otras opciones:
-
-```bash
-# Otro backend
-flutter run -d chrome --dart-define=API_URL=https://mi-backend.onrender.com
-# Sin backend (datos de prueba en memoria)
-flutter run -d chrome --dart-define=USE_BACKEND=false
+```
+Flutter web (Vercel)  ──REST + JWT──►  Spring Boot (Render)  ──►  PostgreSQL (Supabase)
+        ▲                                     │
+        └────────── avisos en vivo (SSE) ─────┘──►  Gemini (IA)
 ```
 
-## Desplegar en Vercel
+La app es Flutter web con Provider. Cada módulo (`lib/features/`) separa dominio, datos y
+presentación. Si el backend o la IA no responden, la app usa un cálculo local y no se cae.
 
-1. Entra a https://vercel.com con tu cuenta de GitHub → **Add New → Project** →
-   importa el repositorio `Spring_Calendario`.
-2. Framework Preset: **Other**. No cambies los comandos: `vercel.json` ya instala
-   Flutter y compila la web.
-3. En **Environment Variables** agrega:
-   `API_URL` = la URL del backend en Render (ej. `https://spring-backend.onrender.com`).
-4. **Deploy**. Copia la URL que te da Vercel y agrégala en Render como
-   `CORS_ALLOWED_ORIGINS` (si no, el navegador bloquea las peticiones).
+## Temas del curso
 
-## Tests
+Se pueden ver en vivo en **Perfil → Rendimiento y tiempo real**.
+
+| Tema | Qué se implementó | Dónde |
+|------|-------------------|-------|
+| 1. Rendimiento e INP | Mide el INP (entrada + procesamiento + pintado), el FCP y las tareas largas; en Safari lo estima siguiendo el Event Loop | `web/perf/web_vitals.js` |
+| 2. Validación en runtime | Las respuestas del servidor se parsean a tipos seguros según el contrato `openapi.yaml` | `lib/core/network/json_parse.dart` |
+| 3. Workers | Web Worker que arma el CSV en otro hilo (botón *Exportar mis datos*); Service Worker para abrir sin internet | `web/workers/`, `web/sw.js` |
+| 4. Rendering | CSR con un esqueleto HTML estático que se pinta antes que Flutter | `web/index.html` |
+| 5. Tiempo real | Conexión SSE con reconexión, pausa en segundo plano y recarga solo de lo que cambió | `lib/core/realtime/` |
+
+**Patrones de diseño:** Repository, Strategy (IA remota o local), Observer (Provider),
+Abstract Factory (`lib/core/di/repository_factory.dart`) y Mixin (`lib/core/network/json_endpoint.dart`).
+
+Más detalle en [TEMAS_DEL_CURSO.md](TEMAS_DEL_CURSO.md).
+
+## Ejecutar
 
 ```bash
-flutter test
+flutter pub get
+flutter run -d chrome --dart-define=USE_BACKEND=false   # sin backend, con datos de prueba
+flutter test                                            # pruebas
 ```
-
-`test/e2e_backend_test.dart` prueba la app contra el backend real; se salta sola si
-el backend no está encendido.

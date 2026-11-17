@@ -14,7 +14,7 @@ Todo se puede ver en la app en **Perfil → Rendimiento y tiempo real** (solo en
 | **Tareas largas que bloquean el Main Thread** | Se cuentan con `PerformanceObserver` tipo `longtask` (> 50 ms). |
 | **Event Loop (tasks vs microtasks)** | `tech_panel_card.dart#_export`: antes de mandar el trabajo al worker se hace `await WidgetsBinding.instance.endOfFrame`, para que primero se **pinte** el estado "Exportando…". Una microtask no lo lograría: la cola de microtasks se vacía antes de que el navegador pinte. Los eventos SSE llegan como *tasks* (`sse_connection_web.dart`). |
 | **Main Thread vs Compositor Thread** | La animación del esqueleto inicial (`web/index.html`) usa solo `transform` y `opacity`, que corren en el Compositor Thread sin Layout ni Paint. |
-| Safari | No tiene Event Timing API: la app lo detecta y pide abrirla en Chrome/Edge para ver el INP. |
+| Safari / iPhone | No tiene Event Timing API: el INP se **estima** siguiendo el Event Loop (`setTimeout` → `requestAnimationFrame` → `setTimeout`) y en Perfil sale como "INP (estimado)". |
 
 ## Tema 3 — Paralelismo real en el navegador (Workers)
 
@@ -46,7 +46,7 @@ Todo se puede ver en la app en **Perfil → Rendimiento y tiempo real** (solo en
 `lib/core/realtime/realtime_service.dart`: pide el ticket, abre el `EventSource`,
 reconecta con espera creciente (5 s, 10 s, 20 s… máx. 60 s) y, al llegar
 `records-changed`, recarga **solo** lo que cambió, con *debounce* de 300 ms
-(`lib/core/di/app_dependencies.dart`).
+(`lib/core/realtime/realtime_sync.dart`).
 
 ## Pruebas
 
