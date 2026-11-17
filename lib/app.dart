@@ -1,12 +1,11 @@
-import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:spring_calendario/core/constants/app_constants.dart';
 import 'package:spring_calendario/core/di/app_dependencies.dart';
 import 'package:spring_calendario/core/l10n/app_localizations.dart';
 import 'package:spring_calendario/core/l10n/locale_controller.dart';
+import 'package:spring_calendario/core/realtime/realtime_service.dart';
 import 'package:spring_calendario/core/routes/app_routes.dart';
 import 'package:spring_calendario/core/theme/app_theme.dart';
 import 'package:spring_calendario/core/theme/theme_controller.dart';
@@ -16,8 +15,6 @@ import 'package:spring_calendario/features/intimacy/presentation/controllers/int
 import 'package:spring_calendario/features/symptoms/presentation/controllers/symptom_controller.dart';
 import 'package:spring_calendario/shared/widgets/responsive.dart';
 
-/// Root widget. Exposes the controllers created by [AppDependencies] to the
-/// widget tree through Provider.
 class SpringApp extends StatelessWidget {
   const SpringApp({super.key, required this.dependencies});
 
@@ -33,6 +30,7 @@ class SpringApp extends StatelessWidget {
         ChangeNotifierProvider<ThemeController>.value(value: dependencies.themeController),
         ChangeNotifierProvider<LocaleController>.value(value: dependencies.localeController),
         ChangeNotifierProvider<IntimacyController>.value(value: dependencies.intimacyController),
+        ChangeNotifierProvider<RealtimeService>.value(value: dependencies.realtimeService),
       ],
       child: const _SpringMaterialApp(),
     );
@@ -60,7 +58,6 @@ class _SpringMaterialApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      // En computadora: notificaciones pequeñas y encabezados de página web.
       builder: (context, child) {
         final page = child ?? const SizedBox.shrink();
         if (!Breakpoints.isWide(context)) return page;
