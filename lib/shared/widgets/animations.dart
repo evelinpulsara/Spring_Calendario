@@ -4,7 +4,6 @@ import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:spring_calendario/core/theme/app_colors.dart';
 
-/// Aparece con un desvanecido y un pequeño desplazamiento hacia arriba.
 class FadeSlideIn extends StatefulWidget {
   const FadeSlideIn({
     super.key,
@@ -63,7 +62,6 @@ class _FadeSlideInState extends State<FadeSlideIn> with SingleTickerProviderStat
   }
 }
 
-/// Envuelve cada elemento para que aparezcan uno tras otro.
 List<Widget> staggered(List<Widget> children, {Duration step = const Duration(milliseconds: 70)}) {
   return [
     for (var i = 0; i < children.length; i++)
@@ -71,7 +69,6 @@ List<Widget> staggered(List<Widget> children, {Duration step = const Duration(mi
   ];
 }
 
-/// Se encoge un poco al presionarlo, como un botón suave.
 class PressableScale extends StatefulWidget {
   const PressableScale({super.key, required this.child, this.enabled = true});
 
@@ -105,7 +102,6 @@ class _PressableScaleState extends State<PressableScale> {
   }
 }
 
-/// Fondo con manchas de color suaves que flotan lentamente.
 class SoftBackground extends StatefulWidget {
   const SoftBackground({super.key, required this.child});
 
@@ -195,8 +191,6 @@ class _SoftBackgroundState extends State<SoftBackground> with SingleTickerProvid
   }
 }
 
-/// Como IndexedStack (conserva el estado de cada pestaña), pero con una
-/// transición suave al cambiar de pestaña.
 class FadeIndexedStack extends StatefulWidget {
   const FadeIndexedStack({super.key, required this.index, required this.children});
 
@@ -239,7 +233,6 @@ class _FadeIndexedStackState extends State<FadeIndexedStack> with SingleTickerPr
   }
 }
 
-/// Transición entre pantallas: desvanecido con un leve deslizamiento.
 class SoftPageRoute<T> extends PageRouteBuilder<T> {
   SoftPageRoute({required WidgetBuilder builder, super.settings})
       : super(
@@ -259,7 +252,6 @@ class SoftPageRoute<T> extends PageRouteBuilder<T> {
         );
 }
 
-/// Tres puntitos que saltan (para "Spring está pensando...").
 class ThinkingDots extends StatefulWidget {
   const ThinkingDots({super.key, this.color = AppColors.purple});
 
@@ -302,7 +294,6 @@ class _ThinkingDotsState extends State<ThinkingDots> with SingleTickerProviderSt
   }
 }
 
-/// Late suavemente (para llamar la atención sin asustar).
 class GentlePulse extends StatefulWidget {
   const GentlePulse({super.key, required this.child});
 

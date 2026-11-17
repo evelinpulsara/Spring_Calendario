@@ -12,7 +12,6 @@ class _OnboardingPageData {
   final double moonProgress;
 }
 
-/// Explains what Spring does and offers "Get Started" / "I already have an account".
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 

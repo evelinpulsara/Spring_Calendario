@@ -1,4 +1,3 @@
-/// A text insight produced by Spring Assistant.
 class AiInsight {
   const AiInsight({
     required this.title,
@@ -12,11 +11,8 @@ class AiInsight {
   final String message;
   final DateTime generatedAt;
 
-  /// How many symptom entries were used to build the insight.
   final int basedOnEntries;
 
-  /// Modelo de IA que generó el consejo (por ejemplo "gemini-3.8-flash").
-  /// Es `null` cuando el consejo es la respuesta local de respaldo.
   final String? model;
 
   bool get isFromAi => model != null;

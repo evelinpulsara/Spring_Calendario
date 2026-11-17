@@ -3,8 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:spring_calendario/core/theme/app_colors.dart';
 
-/// Minimal moon illustration. [progress] goes from 0 (new moon) through
-/// 0.5 (full moon) back to 1 (new moon), mirroring a cycle.
 class MoonWidget extends StatelessWidget {
   const MoonWidget({super.key, this.size = 120, required this.progress});
 
@@ -32,7 +30,6 @@ class _MoonPainter extends CustomPainter {
     final center = Offset(radius, radius);
     final moonRadius = radius * 0.9;
 
-    // Soft glow behind the moon.
     canvas.drawCircle(
       center,
       radius * 0.95,

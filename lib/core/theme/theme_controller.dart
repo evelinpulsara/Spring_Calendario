@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Holds the selected theme mode (light, dark or system).
 class ThemeController extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.light;
 

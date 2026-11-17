@@ -1,6 +1,5 @@
 import 'package:spring_calendario/features/cycle/domain/entities/cycle_phase.dart';
 
-/// Estimated information about the current and next cycle.
 class CyclePrediction {
   const CyclePrediction({
     required this.cycleDay,

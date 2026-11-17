@@ -1,6 +1,5 @@
 import 'package:spring_calendario/features/authentication/domain/entities/user.dart';
 
-/// Thrown when login or registration fails.
 class AuthException implements Exception {
   const AuthException(this.message);
   final String message;
@@ -9,7 +8,6 @@ class AuthException implements Exception {
   String toString() => message;
 }
 
-/// Contract for user data. Implement it with Supabase, Firebase or a REST API.
 abstract class UserRepository {
   Future<User?> getCurrentUser();
   Future<User> login({required String email, required String password});

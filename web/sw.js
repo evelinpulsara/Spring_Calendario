@@ -1,12 +1,3 @@
-// Service Worker (tema 3 del curso: workers como proxy de red).
-//
-// Intercepta las peticiones de la página para que la app abra aunque no haya
-// internet. Estrategia "network-first": siempre intenta traer la versión
-// nueva de Vercel y guarda una copia; si no hay red, usa la copia.
-// Así nunca se queda una versión vieja después de un despliegue.
-//
-// No toca las llamadas al backend (otro origen): esos datos siempre van en vivo.
-
 const CACHE = 'spring-shell-v1';
 
 self.addEventListener('install', () => self.skipWaiting());
@@ -37,7 +28,6 @@ self.addEventListener('fetch', (event) => {
       .catch(async () => {
         const cached = await caches.match(request);
         if (cached) return cached;
-        // Sin red y sin copia: para la navegación, devolver el index guardado (app de una sola página).
         if (request.mode === 'navigate') {
           const shell = await caches.match('/');
           if (shell) return shell;

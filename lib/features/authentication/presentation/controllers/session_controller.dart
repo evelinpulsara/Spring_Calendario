@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:spring_calendario/features/authentication/domain/entities/user.dart';
 import 'package:spring_calendario/features/authentication/domain/repositories/user_repository.dart';
 
-/// Holds the logged-in user and exposes login / register / profile updates.
 class SessionController extends ChangeNotifier {
   SessionController(this._repository);
 

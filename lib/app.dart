@@ -15,8 +15,6 @@ import 'package:spring_calendario/features/intimacy/presentation/controllers/int
 import 'package:spring_calendario/features/symptoms/presentation/controllers/symptom_controller.dart';
 import 'package:spring_calendario/shared/widgets/responsive.dart';
 
-/// Root widget. Exposes the controllers created by [AppDependencies] to the
-/// widget tree through Provider.
 class SpringApp extends StatelessWidget {
   const SpringApp({super.key, required this.dependencies});
 
@@ -60,7 +58,6 @@ class _SpringMaterialApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      // En computadora: notificaciones pequeñas y encabezados de página web.
       builder: (context, child) {
         final page = child ?? const SizedBox.shrink();
         if (!Breakpoints.isWide(context)) return page;

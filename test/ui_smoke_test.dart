@@ -17,7 +17,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:spring_calendario/shared/widgets/main_shell.dart';
 import 'package:spring_calendario/shared/widgets/sidebar.dart';
 
-/// Va a una sección: por texto (barra o menú abierto) o por tooltip (menú escondido).
 Future<void> goTo(WidgetTester tester, String tab) async {
   final byTooltip = find.byTooltip(tab);
   if (byTooltip.evaluate().isNotEmpty) {
@@ -46,7 +45,6 @@ void main() {
       addTearDown(tester.view.reset);
 
       final deps = AppDependencies(useBackend: false);
-      // Relación sin protección hoy, para mostrar el aviso de riesgo.
       await deps.cycleController.load();
       await deps.intimacyController.save(AppDateUtils.today(), ProtectionType.none);
 
@@ -83,9 +81,7 @@ void main() {
         await goTo(tester, tab);
       }
 
-      // Calendario: detalle del día con la relación y su panel.
       await goTo(tester, 'Calendario');
-      // Corazón lleno en el calendario = relación sin protección.
       Finder inGrid(IconData icon) => find.descendant(
           of: find.descendant(of: find.byType(CalendarScreen), matching: find.byType(GridView)),
           matching: find.byIcon(icon));
@@ -111,7 +107,6 @@ void main() {
       await settle(tester);
       expect(deps.intimacyController.entryFor(AppDateUtils.today())!.protection,
           ProtectionType.condom);
-      // Con condón: el corazón queda solo con el contorno (subimos hasta el calendario).
       await tester.drag(
           find.descendant(of: find.byType(CalendarScreen), matching: find.byType(Scrollable)).first,
           const Offset(0, 3000));
@@ -119,7 +114,6 @@ void main() {
       expect(inGrid(Icons.favorite_border_rounded), findsOneWidget);
       expect(inGrid(Icons.favorite_rounded), findsNothing);
 
-      // Cambiar de mes.
       await tester.scrollUntilVisible(
           find.descendant(
               of: find.byType(CalendarScreen), matching: find.byIcon(Icons.chevron_right_rounded)),
@@ -151,7 +145,6 @@ void main() {
       if (size.width >= 900) {
         expect(find.byType(Sidebar), findsOneWidget);
         expect(find.byType(NavigationBar), findsNothing);
-        // El menú lateral se puede esconder y volver a mostrar.
         await tester.tap(find.byTooltip(size.width >= 1200 ? 'Esconder menú' : 'Mostrar menú'));
         await settle(tester);
         await tester.tap(find.byTooltip(size.width >= 1200 ? 'Mostrar menú' : 'Esconder menú'));

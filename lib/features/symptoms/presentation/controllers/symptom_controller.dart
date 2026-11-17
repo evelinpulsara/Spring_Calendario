@@ -9,7 +9,6 @@ import 'package:spring_calendario/features/symptoms/domain/entities/symptom_type
 import 'package:spring_calendario/features/symptoms/domain/repositories/symptom_repository.dart';
 import 'package:spring_calendario/features/symptoms/domain/services/ai_insight_service.dart';
 
-/// State holder for symptoms and the Spring Assistant insight.
 class SymptomController extends ChangeNotifier {
   SymptomController({
     required SymptomRepository repository,
@@ -35,7 +34,6 @@ class SymptomController extends ChangeNotifier {
 
   bool hasSymptoms(DateTime date) => _entries.any((e) => AppDateUtils.isSameDay(e.date, date));
 
-  /// Symptoms sorted by how often they were logged (most common first).
   List<MapEntry<SymptomType, int>> get topSymptoms {
     final counts = <SymptomType, int>{};
     for (final entry in _entries) {
@@ -49,7 +47,6 @@ class SymptomController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Saves the symptoms of one day. Intensity 0 means "not present".
   Future<void> saveForDate(DateTime date, Map<SymptomType, int> intensities) async {
     final day = AppDateUtils.dateOnly(date);
     final entries = intensities.entries

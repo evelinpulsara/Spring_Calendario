@@ -6,7 +6,6 @@ import 'package:spring_calendario/core/theme/app_colors.dart';
 import 'package:spring_calendario/features/authentication/presentation/controllers/session_controller.dart';
 import 'package:spring_calendario/shared/widgets/moon_widget.dart';
 
-/// Shows the logo with a short animation, then routes to onboarding or home.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 

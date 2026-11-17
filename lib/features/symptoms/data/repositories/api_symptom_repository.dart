@@ -4,7 +4,6 @@ import 'package:spring_calendario/features/symptoms/domain/entities/symptom_entr
 import 'package:spring_calendario/features/symptoms/domain/entities/symptom_type.dart';
 import 'package:spring_calendario/features/symptoms/domain/repositories/symptom_repository.dart';
 
-/// Síntomas guardados en la base de datos.
 class ApiSymptomRepository implements SymptomRepository {
   ApiSymptomRepository(this._api);
 
@@ -12,7 +11,6 @@ class ApiSymptomRepository implements SymptomRepository {
 
   @override
   Future<List<SymptomEntry>> getAllEntries() async {
-    // Se parsea según el contrato (Symptom en openapi.yaml).
     final list = JsonObject.parseList(await _api.get('/api/symptoms'), 'symptoms');
     return [
       for (final j in list)
@@ -31,7 +29,6 @@ class ApiSymptomRepository implements SymptomRepository {
         [for (final e in entries) {'type': e.type.name, 'intensity': e.intensity}],
       );
 
-  /// Los datos se borran juntos con DELETE /api/me/data (ver ApiCycleRepository).
   @override
   Future<void> clear() async {}
 }

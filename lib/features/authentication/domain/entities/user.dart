@@ -1,4 +1,3 @@
-/// Reminder settings chosen by the user.
 class NotificationPreferences {
   const NotificationPreferences({
     this.periodReminders = true,
@@ -23,13 +22,10 @@ class NotificationPreferences {
   }
 }
 
-/// Grupo de edad (cambia los rangos normales del ciclo).
 enum AgeGroup { teen, adult, unknown }
 
-/// Qué tan regular es el ciclo, según la usuaria.
 enum CycleRegularity { regular, irregular, unsure }
 
-/// Application user. Cycle settings are used as fallbacks for predictions.
 class User {
   const User({
     required this.id,
@@ -52,7 +48,6 @@ class User {
   final AgeGroup ageGroup;
   final CycleRegularity regularity;
 
-  /// false hasta que responde el cuestionario inicial del ciclo.
   final bool cycleSetupCompleted;
 
   User copyWith({

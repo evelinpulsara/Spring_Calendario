@@ -7,7 +7,6 @@ import 'package:spring_calendario/features/cycle/domain/entities/cycle_predictio
 import 'package:spring_calendario/features/cycle/domain/entities/menstrual_cycle.dart';
 import 'package:spring_calendario/features/cycle/domain/entities/period_entry.dart';
 
-/// Predicted days used to paint the calendar.
 class CycleProjection {
   const CycleProjection({
     required this.predictedPeriodDays,
@@ -21,11 +20,8 @@ class CycleProjection {
   final Set<DateTime> fertileDays;
   final Set<DateTime> ovulationDays;
 
-  /// Días en los que podría empezar el próximo periodo (ventana de la predicción).
   final Set<DateTime> possibleStartDays;
 
-  /// Días que probablemente dure el periodo actual y aún no están registrados
-  /// (se muestran con un rosa más opaco).
   final Set<DateTime> expectedPeriodDays;
 
   static const CycleProjection empty = CycleProjection(
@@ -35,23 +31,15 @@ class CycleProjection {
   );
 }
 
-/// Pure calculation logic (no Flutter, no storage), easy to unit test.
-///
-/// Simple, well-known estimation rules (NOT medical advice):
-///  * next period = last period start + average cycle length
-///  * ovulation  = next period start - 14 days
-///  * fertile window = 5 days before ovulation up to 1 day after
 class CycleCalculator {
   const CycleCalculator();
 
-  /// Groups consecutive logged days into cycles, ordered oldest to newest.
   List<MenstrualCycle> buildCycles(List<PeriodEntry> entries) {
     if (entries.isEmpty) return const [];
 
     final days = entries.map((e) => AppDateUtils.dateOnly(e.date)).toSet().toList()
       ..sort();
 
-    // Each block is [firstDay, lastDay]. A gap of 1 skipped day is tolerated.
     final blocks = <List<DateTime>>[];
     var start = days.first;
     var end = days.first;
@@ -107,12 +95,10 @@ class CycleCalculator {
     final periodLength =
         override?.periodLength ?? (averagePeriodLength(cycles) ?? fallbackPeriodLength).round();
 
-    // If the user forgot to log a period, keep projecting forward.
     var currentStart = cycles.last.startDate;
     final DateTime nextStart;
     if (override != null &&
         AppDateUtils.daysBetween(currentStart, override.likelyStart) >= 15) {
-      // Predicción de la IA para el próximo inicio.
       nextStart = override.likelyStart;
       cycleLength = AppDateUtils.daysBetween(currentStart, nextStart);
     } else {
@@ -123,14 +109,13 @@ class CycleCalculator {
     }
     final cycleDay = math.max(1, AppDateUtils.daysBetween(currentStart, today) + 1);
 
-    // Cycle day on which ovulation is expected (1-based).
     final ovulationDay = override != null && override.ovulationDate.isAfter(currentStart)
         ? AppDateUtils.daysBetween(currentStart, override.ovulationDate) + 1
         : cycleLength - AppConstants.lutealPhaseLength + 1;
 
     var ovulation = AppDateUtils.addDays(currentStart, ovulationDay - 1);
     if (ovulation.isBefore(today)) {
-      ovulation = AppDateUtils.addDays(nextStart, ovulationDay - 1); // next cycle
+      ovulation = AppDateUtils.addDays(nextStart, ovulationDay - 1);
     }
 
     final CyclePhase phase;
@@ -158,7 +143,6 @@ class CycleCalculator {
     );
   }
 
-  /// Projects period, fertile and ovulation days for the calendar.
   CycleProjection project({
     required List<MenstrualCycle> cycles,
     required int fallbackCycleLength,
@@ -192,7 +176,6 @@ class CycleCalculator {
 
     for (final cycle in cycles) {
       if (cycle == lastCycle && useOverride) {
-        // Ovulación y días fértiles del ciclo actual según la IA.
         ovulation.add(override.ovulationDate);
         for (var i = -AppConstants.fertileDaysBeforeOvulation;
             i <= AppConstants.fertileDaysAfterOvulation;
@@ -204,7 +187,6 @@ class CycleCalculator {
       }
     }
 
-    // Primer inicio futuro: el de la IA o el promedio.
     final firstStart = useOverride
         ? override.likelyStart
         : AppDateUtils.addDays(lastCycle.startDate, cycleLength);
@@ -216,7 +198,6 @@ class CycleCalculator {
       addFertility(start, cycleLength);
     }
 
-    // Ventana de posibles días de inicio del próximo periodo.
     final possible = <DateTime>{};
     if (useOverride) {
       for (var d = override.earliestStart;
@@ -230,7 +211,6 @@ class CycleCalculator {
       }
     }
 
-    // Días probables del periodo actual que aún no se registraron.
     final expected = <DateTime>{};
     if (lastCycle.periodLength < periodLength) {
       for (var d = lastCycle.periodLength; d < periodLength; d++) {
@@ -248,8 +228,6 @@ class CycleCalculator {
   }
 }
 
-/// Predicción del próximo periodo (de la IA o local) que reemplaza al
-/// cálculo por promedios.
 class PredictionOverride {
   const PredictionOverride({
     required this.earliestStart,

@@ -13,7 +13,6 @@ import 'package:spring_calendario/features/cycle/domain/repositories/cycle_repos
 import 'package:spring_calendario/features/cycle/domain/repositories/prediction_repository.dart';
 import 'package:spring_calendario/features/cycle/domain/services/cycle_calculator.dart';
 
-/// State holder for period days, derived cycles and predictions.
 class CycleController extends ChangeNotifier {
   CycleController({
     required CycleRepository cycleRepository,
@@ -45,19 +44,15 @@ class CycleController extends ChangeNotifier {
 
   List<MenstrualCycle> get cycles => _cycles;
 
-  /// Días de periodo registrados, ordenados por fecha (para exportar).
   List<PeriodEntry> get periodEntries =>
       _entriesByDate.values.toList()..sort((a, b) => a.date.compareTo(b.date));
   CyclePrediction? get prediction => _prediction;
   CycleProjection get projection => _projection;
 
-  /// Predicción del próximo periodo (de la IA, o local mientras responde).
   PeriodForecast? get forecast => _forecast;
 
-  /// true mientras la IA está calculando la predicción.
   bool get isForecasting => _isForecasting;
 
-  /// Most recent cycles first.
   List<MenstrualCycle> get recentCycles => _cycles.reversed.take(6).toList();
 
   double? get averageCycleLength => _calculator.averageCycleLength(_cycles);
@@ -93,7 +88,6 @@ class CycleController extends ChangeNotifier {
     } else if (input.cacheKey == _forecastKey && _forecast != null) {
       _applyForecast(cycleLength, periodLength);
     } else {
-      // Primero el cálculo local (inmediato) y luego la IA lo mejora.
       _forecast = await const LocalPeriodForecastService().forecast(input);
       _forecastKey = null;
       _applyForecast(cycleLength, periodLength);
@@ -102,7 +96,6 @@ class CycleController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Vuelve a pedir la predicción a la IA.
   Future<void> refreshForecast() async {
     final user = _currentUser();
     final cycleLength = user?.averageCycleLength ?? AppConstants.defaultCycleLength;
@@ -137,7 +130,7 @@ class CycleController extends ChangeNotifier {
     notifyListeners();
     try {
       final result = await _forecastService.forecast(input);
-      if (request != _forecastRequest) return; // llegó una consulta más nueva
+      if (request != _forecastRequest) return;
       _forecast = result;
       _forecastKey = input.cacheKey;
       _applyForecast(cycleLength, periodLength);
@@ -149,7 +142,6 @@ class CycleController extends ChangeNotifier {
     }
   }
 
-  /// Recalcula predicción y calendario usando la predicción guardada.
   void _applyForecast(int cycleLength, int periodLength) {
     final f = _forecast;
     if (f == null) return;
@@ -175,7 +167,6 @@ class CycleController extends ChangeNotifier {
     );
   }
 
-  /// Registra varios días de menstruación de una vez (cuestionario inicial).
   Future<void> addPeriodDays(DateTime start, int days) async {
     final today = AppDateUtils.today();
     for (var d = 0; d < days; d++) {

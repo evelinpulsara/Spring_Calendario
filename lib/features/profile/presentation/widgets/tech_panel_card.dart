@@ -13,8 +13,6 @@ import 'package:spring_calendario/features/symptoms/presentation/controllers/sym
 import 'package:spring_calendario/shared/widgets/section_title.dart';
 import 'package:spring_calendario/shared/widgets/spring_card.dart';
 
-/// Panel técnico (temas del curso): tiempo real con SSE, métricas INP/FCP,
-/// Service Worker y exportación con Web Worker. Solo aparece en la web.
 class TechPanelCard extends StatefulWidget {
   const TechPanelCard({super.key});
 
@@ -32,7 +30,6 @@ class _TechPanelCardState extends State<TechPanelCard> {
   void initState() {
     super.initState();
     _vitals = BrowserFeatures.readVitals();
-    // Las métricas cambian con cada interacción: se leen cada 2 s.
     _refresh = Timer.periodic(const Duration(seconds: 2), (_) {
       if (mounted) setState(() => _vitals = BrowserFeatures.readVitals());
     });
@@ -64,8 +61,6 @@ class _TechPanelCardState extends State<TechPanelCard> {
     };
 
     setState(() => _exporting = true);
-    // Event Loop: esperar a que se pinte el frame con "Exportando..." antes de
-    // seguir. Así la respuesta visual al clic es inmediata (mejor INP).
     await WidgetsBinding.instance.endOfFrame;
 
     try {
@@ -100,7 +95,6 @@ class _TechPanelCardState extends State<TechPanelCard> {
         children: [
           SectionTitle(es ? 'Rendimiento y tiempo real' : 'Performance & real time'),
 
-          // ── Tiempo real (SSE) ────────────────────────────────────────────
           _Row(
             icon: Icons.sync_rounded,
             label: es ? 'Sincronización en vivo (SSE)' : 'Live sync (SSE)',
@@ -117,7 +111,6 @@ class _TechPanelCardState extends State<TechPanelCard> {
             ),
           ),
 
-          // ── INP ──────────────────────────────────────────────────────────
           if (v == null || !v.supported)
             _Row(
               icon: Icons.touch_app_rounded,
@@ -128,7 +121,7 @@ class _TechPanelCardState extends State<TechPanelCard> {
           else
             _Row(
               icon: Icons.touch_app_rounded,
-              label: 'INP',
+              label: v.estimated ? (es ? 'INP (estimado)' : 'INP (estimated)') : 'INP',
               value: v.inp == null ? (es ? 'Toca algo…' : 'Tap something…') : '${v.inp} ms · ${_ratingLabel(v.rating, es)}',
               color: _ratingColor(v.rating),
             ),
@@ -137,10 +130,14 @@ class _TechPanelCardState extends State<TechPanelCard> {
             child: Text(
               v == null || !v.supported
                   ? (es
-                      ? 'Este navegador no mide INP (Safari aún no tiene Event Timing API). Ábrela en Chrome o Edge.'
-                      : 'This browser cannot measure INP (no Event Timing API in Safari yet). Use Chrome or Edge.')
+                      ? 'Este navegador no permite medir el INP.'
+                      : 'This browser cannot measure INP.')
                   : v.inp == null
-                      ? (es ? 'Se mide con cada clic o toque.' : 'Measured on every click or tap.')
+                      ? (v.estimated
+                          ? (es
+                              ? 'Se mide con cada toque. En Safari/iPhone se estima siguiendo el Event Loop.'
+                              : 'Measured on every tap. On Safari/iPhone it is estimated by following the Event Loop.')
+                          : (es ? 'Se mide con cada clic o toque.' : 'Measured on every click or tap.'))
                       : (es
                           ? 'Entrada ${v.inputDelay} ms + Procesamiento ${v.processing} ms + Presentación ${v.presentation} ms'
                               ' · ${v.interactions} interacciones · ${v.longTasks} tareas largas'
@@ -150,7 +147,6 @@ class _TechPanelCardState extends State<TechPanelCard> {
             ),
           ),
 
-          // ── FCP / Service Worker ─────────────────────────────────────────
           _Row(
             icon: Icons.bolt_rounded,
             label: es ? 'Primer contenido pintado (FCP)' : 'First Contentful Paint',
@@ -165,7 +161,6 @@ class _TechPanelCardState extends State<TechPanelCard> {
           ),
           const SizedBox(height: 12),
 
-          // ── Web Worker ───────────────────────────────────────────────────
           OutlinedButton.icon(
             onPressed: _exporting ? null : _export,
             icon: _exporting
@@ -195,13 +190,14 @@ class _TechPanelCardState extends State<TechPanelCard> {
         RealtimeStatus.live => es ? 'En vivo' : 'Live',
         RealtimeStatus.connecting => es ? 'Conectando…' : 'Connecting…',
         RealtimeStatus.retrying => es ? 'Reintentando…' : 'Retrying…',
+        RealtimeStatus.paused => es ? 'En pausa' : 'Paused',
         RealtimeStatus.off => es ? 'Apagada' : 'Off',
       };
 
   static Color _realtimeColor(RealtimeStatus s) => switch (s) {
         RealtimeStatus.live => AppColors.normalDay,
         RealtimeStatus.connecting || RealtimeStatus.retrying => const Color(0xFFE0A030),
-        RealtimeStatus.off => AppColors.textMuted,
+        RealtimeStatus.paused || RealtimeStatus.off => AppColors.textMuted,
       };
 
   static String _ratingLabel(String? r, bool es) => switch (r) {
@@ -235,9 +231,10 @@ class _Row extends StatelessWidget {
         children: [
           Icon(icon, size: 20, color: AppColors.purple),
           const SizedBox(width: 12),
-          Expanded(child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600))),
+          Expanded(flex: 3, child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600))),
           const SizedBox(width: 8),
-          Flexible(
+          Expanded(
+            flex: 2,
             child: Text(
               value,
               textAlign: TextAlign.end,

@@ -14,7 +14,6 @@ import 'package:spring_calendario/shared/widgets/spring_card.dart';
 import 'package:spring_calendario/shared/widgets/section_title.dart';
 import 'package:spring_calendario/shared/widgets/stat_tile.dart';
 
-/// Simple calculated statistics about the user's cycles and symptoms.
 class InsightsScreen extends StatelessWidget {
   const InsightsScreen({super.key});
 
@@ -34,6 +33,9 @@ class InsightsScreen extends StatelessWidget {
       body: SafeArea(
         child: StaggeredListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          sideChildren: [
+            const SpringAssistantCard(),
+          ],
           children: [
             Row(
               children: [
@@ -43,7 +45,7 @@ class InsightsScreen extends StatelessWidget {
                     label: t.averageCycle,
                     value: avgCycle == null
                         ? '--'
-                        : '${avgCycle.toStringAsFixed(1)} ${t.days_label}',
+                        : '${avgCycle.toStringAsFixed(1)} ${t.daysLabel}',
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -53,7 +55,7 @@ class InsightsScreen extends StatelessWidget {
                     label: t.averagePeriod,
                     value: avgPeriod == null
                         ? '--'
-                        : '${avgPeriod.toStringAsFixed(1)} ${t.days_label}',
+                        : '${avgPeriod.toStringAsFixed(1)} ${t.daysLabel}',
                   ),
                 ),
               ],
@@ -135,7 +137,7 @@ class InsightsScreen extends StatelessWidget {
                           ? 'Inició el ${AppDateUtils.shortDate(item.startDate)}'
                           : 'Started ${AppDateUtils.shortDate(item.startDate)}'),
                       subtitle: Text(t.isSpanish
-                          ? 'Período: ${item.periodLength} ${t.days_label}'
+                          ? 'Período: ${item.periodLength} ${t.daysLabel}'
                           : 'Period: ${item.periodLength} days'),
                       trailing: Text(
                         item.isInProgress
@@ -149,9 +151,6 @@ class InsightsScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ],
-          sideChildren: [
-            const SpringAssistantCard(),
           ],
         ),
       ),

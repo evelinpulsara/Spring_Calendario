@@ -1,13 +1,3 @@
-// Métricas de rendimiento (tema 1 del curso: INP, Event Loop y renderizado).
-//
-// INP (Interaction to Next Paint) = Input Delay + Processing Duration + Presentation Delay
-//   - Input Delay:        desde el clic hasta que el Main Thread empieza a atenderlo
-//                         (si está ocupado con una tarea larga, hay espera).
-//   - Processing:         lo que tardan los manejadores del evento (JS).
-//   - Presentation Delay: Style → Layout → Paint → Composite del siguiente frame.
-// Umbrales: bueno ≤ 200 ms, necesita mejora ≤ 500 ms, pobre > 500 ms.
-//
-// Se guarda en window.springVitals y la app Flutter lo muestra en Perfil.
 (function () {
   const vitals = (window.springVitals = {
     inp: null,
@@ -20,59 +10,85 @@
     fcp: null,
     ttfb: null,
     supported: false,
+    estimated: false,
     serviceWorker: false,
     crossOriginIsolated: !!window.crossOriginIsolated,
   });
 
   const rate = (ms) => (ms <= 200 ? 'good' : ms <= 500 ? 'needs-improvement' : 'poor');
 
-  // Peor duración por interacción (un clic genera varios eventos: pointerdown, pointerup, click).
   const worstByInteraction = new Map();
 
-  function updateInp() {
+  function record(id, it) {
+    const prev = worstByInteraction.get(id);
+    if (!prev || it.duration > prev.duration) worstByInteraction.set(id, it);
     const list = [...worstByInteraction.values()].sort((a, b) => b.duration - a.duration);
-    if (!list.length) return;
-    // Con pocas interacciones INP es la peor; con muchas, se ignora 1 de cada 50 (p98).
-    const entry = list[Math.min(list.length - 1, Math.floor(list.length / 50))];
-    vitals.inp = Math.round(entry.duration);
-    vitals.rating = rate(entry.duration);
-    vitals.inputDelay = Math.round(entry.processingStart - entry.startTime);
-    vitals.processing = Math.round(entry.processingEnd - entry.processingStart);
-    vitals.presentation = Math.max(
-      0,
-      Math.round(entry.startTime + entry.duration - entry.processingEnd),
-    );
+    const worst = list[Math.min(list.length - 1, Math.floor(list.length / 50))];
+    vitals.inp = Math.round(worst.duration);
+    vitals.rating = rate(worst.duration);
+    vitals.inputDelay = Math.max(0, Math.round(worst.inputDelay));
+    vitals.processing = Math.max(0, Math.round(worst.processing));
+    vitals.presentation = Math.max(0, Math.round(worst.presentation));
     vitals.interactions = list.length;
   }
 
-  try {
-    // Event Timing API (Chrome/Edge/Firefox; Safari aún no la tiene).
+  const types = (window.PerformanceObserver && PerformanceObserver.supportedEntryTypes) || [];
+
+  if (types.includes('event')) {
     new PerformanceObserver((list) => {
       for (const e of list.getEntries()) {
         if (!e.interactionId) continue;
-        const prev = worstByInteraction.get(e.interactionId);
-        if (!prev || e.duration > prev.duration) worstByInteraction.set(e.interactionId, e);
+        record(e.interactionId, {
+          duration: e.duration,
+          inputDelay: e.processingStart - e.startTime,
+          processing: e.processingEnd - e.processingStart,
+          presentation: e.startTime + e.duration - e.processingEnd,
+        });
       }
-      updateInp();
     }).observe({ type: 'event', durationThreshold: 16, buffered: true });
     vitals.supported = true;
-  } catch (_) {}
+  } else {
+    let nextId = 0;
+    const onInput = (event) => {
+      const id = ++nextId;
+      const handlerStart = performance.now();
+      let start = event.timeStamp;
+      if (!(start > 0 && start <= handlerStart)) start = handlerStart;
+      setTimeout(() => {
+        const processingEnd = performance.now();
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            const end = performance.now();
+            record(id, {
+              duration: end - start,
+              inputDelay: handlerStart - start,
+              processing: processingEnd - handlerStart,
+              presentation: end - processingEnd,
+            });
+          }, 0);
+        });
+      }, 0);
+    };
+    for (const type of ['pointerup', 'keydown']) {
+      window.addEventListener(type, onInput, { capture: true, passive: true });
+    }
+    vitals.supported = true;
+    vitals.estimated = true;
+  }
 
-  try {
-    // Tareas largas (> 50 ms) que bloquean el Main Thread.
+  if (types.includes('longtask')) {
     new PerformanceObserver((list) => {
       vitals.longTasks += list.getEntries().length;
     }).observe({ type: 'longtask', buffered: true });
-  } catch (_) {}
+  }
 
-  try {
-    // FCP: primer contenido pintado (el esqueleto HTML estático de index.html).
+  if (types.includes('paint')) {
     new PerformanceObserver((list) => {
       for (const e of list.getEntries()) {
         if (e.name === 'first-contentful-paint') vitals.fcp = Math.round(e.startTime);
       }
     }).observe({ type: 'paint', buffered: true });
-  } catch (_) {}
+  }
 
   try {
     const nav = performance.getEntriesByType('navigation')[0];

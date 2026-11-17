@@ -6,8 +6,6 @@ import 'package:spring_calendario/features/authentication/domain/entities/user.d
 import 'package:spring_calendario/features/cycle/domain/entities/period_forecast.dart';
 import 'package:spring_calendario/features/cycle/domain/services/period_forecast_service.dart';
 
-/// Predicción local (sin internet): promedio de ciclos + una ventana de días
-/// más ancha cuando el ciclo es irregular, adolescente o hay pocos datos.
 class LocalPeriodForecastService implements PeriodForecastService {
   const LocalPeriodForecastService();
 
@@ -38,7 +36,6 @@ class LocalPeriodForecastService implements PeriodForecastService {
     );
   }
 
-  /// Días antes/después del día más probable.
   static int windowSide(ForecastInput input) {
     final lengths = input.cycles.map((c) => c.cycleLength).whereType<int>().toList();
     var side = 1;

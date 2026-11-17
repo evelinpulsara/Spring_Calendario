@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spring_calendario/core/theme/app_colors.dart';
 
-/// Builds the light and dark Material themes.
 class AppTheme {
   AppTheme._();
 

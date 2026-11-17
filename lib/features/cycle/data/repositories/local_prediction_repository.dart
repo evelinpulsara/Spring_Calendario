@@ -4,8 +4,6 @@ import 'package:spring_calendario/features/cycle/domain/repositories/cycle_repos
 import 'package:spring_calendario/features/cycle/domain/repositories/prediction_repository.dart';
 import 'package:spring_calendario/features/cycle/domain/services/cycle_calculator.dart';
 
-/// Computes predictions on the device from the stored period entries.
-/// A backend-powered version can implement the same interface.
 class LocalPredictionRepository implements PredictionRepository {
   LocalPredictionRepository({
     required CycleRepository cycleRepository,

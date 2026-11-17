@@ -4,12 +4,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spring_calendario/core/config/api_config.dart';
+import 'package:spring_calendario/core/utils/date_utils.dart';
 
-/// Error de la API con un código (por ejemplo "email_taken") o de conexión.
 class ApiError implements Exception {
   const ApiError(this.status, this.code);
 
-  /// 0 = no hubo conexión con el servidor.
   final int status;
   final String code;
 
@@ -19,7 +18,6 @@ class ApiError implements Exception {
   String toString() => 'ApiError($status, $code)';
 }
 
-/// Cliente HTTP del backend: agrega el token de sesión y convierte errores.
 class ApiClient {
   ApiClient({http.Client? client, String baseUrl = ApiConfig.baseUrl})
       : _client = client ?? http.Client(),
@@ -35,7 +33,6 @@ class ApiClient {
   http.Client get httpClient => _client;
   String get baseUrl => _baseUrl;
 
-  /// Headers con el token, para otras llamadas (por ejemplo la IA).
   Map<String, String> get authHeaders => {
         'Content-Type': 'application/json',
         if (_token != null) 'Authorization': 'Bearer $_token',
@@ -43,7 +40,6 @@ class ApiClient {
 
   bool get hasToken => _token != null;
 
-  /// Recupera la sesión guardada (sobrevive a recargar la página).
   Future<void> loadToken() async {
     final prefs = await SharedPreferences.getInstance();
     _token = prefs.getString(_tokenKey);
@@ -92,7 +88,5 @@ class ApiClient {
     throw ApiError(response.statusCode, code);
   }
 
-  /// Fecha en formato YYYY-MM-DD.
-  static String date(DateTime d) =>
-      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  static String date(DateTime d) => AppDateUtils.isoDate(d);
 }

@@ -3,10 +3,6 @@ import 'package:spring_calendario/features/authentication/domain/entities/user.d
 import 'package:spring_calendario/features/authentication/domain/repositories/user_repository.dart';
 import 'package:spring_calendario/core/l10n/app_language.dart';
 
-/// In-memory authentication used by the MVP.
-///
-/// WARNING: this only simulates authentication. A real implementation must
-/// delegate to a backend and never keep credentials on the device.
 class LocalUserRepository implements UserRepository {
   LocalUserRepository() {
     if (AppConstants.seedDemoData) {
@@ -78,7 +74,6 @@ class LocalUserRepository implements UserRepository {
     _currentUser = null;
   }
 
-  // Placeholder "hash" for the simulation only.
   String _hash(String value) => value.hashCode.toString();
 }
 

@@ -4,7 +4,6 @@ import 'package:spring_calendario/features/cycle/domain/entities/cycle_predictio
 import 'package:spring_calendario/features/cycle/domain/entities/menstrual_cycle.dart';
 import 'package:spring_calendario/features/cycle/domain/entities/period_forecast.dart';
 
-/// Datos para predecir el próximo periodo.
 class ForecastInput {
   const ForecastInput({
     required this.today,
@@ -23,12 +22,8 @@ class ForecastInput {
   final int typicalCycleLength;
   final List<MenstrualCycle> cycles;
 
-  /// Cálculo simple por promedios (referencia y respaldo).
   final CyclePrediction baseline;
 
-  /// Duración esperada del sangrado: promedio de los periodos ya terminados;
-  /// si no hay, la duración típica que respondió la usuaria. Un periodo que
-  /// empezó hace poco (puede seguir en curso) no cuenta.
   int get expectedPeriodLength {
     final finished = [
       for (var i = 0; i < cycles.length; i++)
@@ -40,7 +35,6 @@ class ForecastInput {
     return (finished.reduce((a, b) => a + b) / finished.length).round();
   }
 
-  /// Clave para no repetir la misma consulta.
   String get cacheKey => [
         today.toIso8601String(),
         ageGroup.name,
@@ -51,7 +45,6 @@ class ForecastInput {
       ].join('|');
 }
 
-/// Contrato para predecir el próximo periodo (con IA o localmente).
 abstract class PeriodForecastService {
   Future<PeriodForecast> forecast(ForecastInput input);
 }

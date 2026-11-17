@@ -1,91 +1,75 @@
-import 'dart:convert';
-
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:spring_calendario/core/config/api_config.dart';
 import 'package:spring_calendario/core/l10n/app_language.dart';
+import 'package:spring_calendario/core/network/json_endpoint.dart';
 import 'package:spring_calendario/core/utils/date_utils.dart';
 import 'package:spring_calendario/features/cycle/domain/entities/period_forecast.dart';
 import 'package:spring_calendario/features/cycle/domain/services/period_forecast_service.dart';
 
-/// Predicción del próximo periodo con IA (Gemini) a través del backend.
-/// Si el backend no responde, usa [fallback] (cálculo local).
-class RemotePeriodForecastService implements PeriodForecastService {
+class RemotePeriodForecastService with FallbackOnError implements PeriodForecastService {
   RemotePeriodForecastService({
     required PeriodForecastService fallback,
     http.Client? client,
     String baseUrl = ApiConfig.baseUrl,
     Duration timeout = ApiConfig.aiTimeout,
-    Map<String, String> Function()? headers,
+    HeadersProvider? headers,
   })  : _fallback = fallback,
-        _headers = headers ?? (() => const {'Content-Type': 'application/json'}),
-        _client = client ?? http.Client(),
-        _baseUrl = baseUrl,
-        _timeout = timeout;
+        _endpoint = JsonEndpoint('/api/ai/prediction',
+            client: client, baseUrl: baseUrl, timeout: timeout, headers: headers);
+
+  static const int _lutealDays = 14;
 
   final PeriodForecastService _fallback;
-  final http.Client _client;
-  final String _baseUrl;
-  final Duration _timeout;
-
-  /// Headers de cada llamada (incluye el token de sesión).
-  final Map<String, String> Function() _headers;
+  final JsonEndpoint _endpoint;
 
   @override
-  Future<PeriodForecast> forecast(ForecastInput input) async {
-    try {
-      final response = await _client
-          .post(
-            Uri.parse('$_baseUrl/api/ai/prediction'),
-            headers: _headers(),
-            body: jsonEncode(buildRequestBody(input)),
-          )
-          .timeout(_timeout);
-      if (response.statusCode != 200) {
-        throw Exception('Backend respondió ${response.statusCode}: ${response.body}');
-      }
-      final json = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-      return PeriodForecast(
-        earliestStart: DateTime.parse(json['earliestStart'] as String),
-        likelyStart: DateTime.parse(json['likelyStart'] as String),
-        latestStart: DateTime.parse(json['latestStart'] as String),
-        periodLength: (json['periodLength'] as num).toInt(),
-        ovulationDate: DateTime.parse(json['ovulationDate'] as String),
-        confidence: json['confidence'] as String? ?? 'medium',
-        explanation: json['explanation'] as String? ?? '',
-        model: json['model'] as String? ?? 'gemini',
-      );
-    } catch (error) {
-      debugPrint('Predicción: se usa el cálculo local ($error)');
-      return _fallback.forecast(input);
-    }
+  String get fallbackReason => 'Predicción: se usa el cálculo local';
+
+  @override
+  Future<PeriodForecast> forecast(ForecastInput input) {
+    return remoteOr(
+      () async {
+        final json = await _endpoint.post(buildRequestBody(input));
+        return PeriodForecast(
+          earliestStart: json.date('earliestStart'),
+          likelyStart: json.date('likelyStart'),
+          latestStart: json.date('latestStart'),
+          periodLength: json.integer('periodLength', min: 1),
+          ovulationDate: json.date('ovulationDate'),
+          confidence: json.optionalString('confidence') ?? 'medium',
+          explanation: json.optionalString('explanation') ?? '',
+          model: json.optionalString('model') ?? 'gemini',
+        );
+      },
+      () => _fallback.forecast(input),
+    );
   }
 
-  static String _day(DateTime d) =>
-      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-
-  /// Datos que se envían al backend (sin nombre ni correo).
-  static Map<String, dynamic> buildRequestBody(ForecastInput input) => {
-        'language': AppLanguage.isSpanish ? 'es' : 'en',
-        'today': _day(input.today),
-        'profile': {
-          'ageGroup': input.ageGroup.name,
-          'regularity': input.regularity.name,
-          'typicalPeriodLength': input.typicalPeriodLength,
-          'typicalCycleLength': input.typicalCycleLength,
-        },
-        'cycles': [
-          for (final c in input.cycles)
-            {
-              'startDate': _day(c.startDate),
-              'periodLength': c.periodLength,
-              'cycleLength': c.cycleLength,
-            },
-        ],
-        'baseline': {
-          'nextStart': _day(input.baseline.nextPeriodStart),
-          'periodLength': input.expectedPeriodLength,
-          'ovulation': _day(AppDateUtils.addDays(input.baseline.nextPeriodStart, -14)),
-        },
-      };
+  static Map<String, Object?> buildRequestBody(ForecastInput input) {
+    const day = AppDateUtils.isoDate;
+    final nextStart = input.baseline.nextPeriodStart;
+    return {
+      'language': AppLanguage.isSpanish ? 'es' : 'en',
+      'today': day(input.today),
+      'profile': {
+        'ageGroup': input.ageGroup.name,
+        'regularity': input.regularity.name,
+        'typicalPeriodLength': input.typicalPeriodLength,
+        'typicalCycleLength': input.typicalCycleLength,
+      },
+      'cycles': [
+        for (final c in input.cycles)
+          {
+            'startDate': day(c.startDate),
+            'periodLength': c.periodLength,
+            'cycleLength': c.cycleLength,
+          },
+      ],
+      'baseline': {
+        'nextStart': day(nextStart),
+        'periodLength': input.expectedPeriodLength,
+        'ovulation': day(AppDateUtils.addDays(nextStart, -_lutealDays)),
+      },
+    };
+  }
 }

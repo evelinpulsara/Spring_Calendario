@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spring_calendario/core/l10n/app_language.dart';
 
-/// Guarda el idioma elegido (español por defecto, o inglés).
 class LocaleController extends ChangeNotifier {
   LocaleController() {
     AppLanguage.isSpanish = true;

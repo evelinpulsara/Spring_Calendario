@@ -1,13 +1,3 @@
-// Web Worker (tema 3 del curso: paralelismo real en el navegador).
-//
-// Corre en un HILO SEPARADO del Main Thread: arma el CSV con todos los
-// registros y calcula un resumen sin congelar la interfaz (el Main Thread
-// sigue libre para pintar y responder clics → mejor INP).
-//
-// Un worker NO tiene acceso al DOM: recibe los datos con postMessage y
-// devuelve el resultado también con postMessage (los datos se copian con
-// "structured clone"; no se comparte memoria).
-
 self.onmessage = (event) => {
   const started = performance.now();
   const { periodDays = [], symptoms = [], intimacy = [], language = 'es' } = event.data || {};
@@ -19,7 +9,6 @@ self.onmessage = (event) => {
   for (const i of intimacy) rows.push([i.date, es ? 'relacion' : 'intimacy', i.protection, '']);
   rows.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
 
-  // Resumen: síntoma más frecuente e intensidad promedio por síntoma.
   const bySymptom = {};
   for (const s of symptoms) {
     const acc = (bySymptom[s.type] ||= { count: 0, total: 0 });

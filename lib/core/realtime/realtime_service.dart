@@ -7,7 +7,6 @@ import 'package:spring_calendario/core/network/api_client.dart';
 import 'package:spring_calendario/core/network/json_parse.dart';
 import 'package:spring_calendario/core/realtime/sse_connection.dart';
 
-/// Qué cambió en el servidor (evento `records-changed`).
 enum RealtimeResource { periodDays, symptoms, intimacy, all }
 
 class RealtimeEvent {
@@ -23,8 +22,6 @@ class RealtimeEvent {
     'all': RealtimeResource.all,
   };
 
-  /// Parsea el JSON del evento según el contrato (RealtimeEvent en openapi.yaml).
-  /// Si no lo cumple, lanza [ContractViolation].
   static RealtimeEvent parse(String data) {
     final Object? json;
     try {
@@ -41,11 +38,8 @@ class RealtimeEvent {
   }
 }
 
-enum RealtimeStatus { off, connecting, live, retrying }
+enum RealtimeStatus { off, connecting, live, retrying, paused }
 
-/// Tiempo real (tema 5 del curso): mantiene abierta una conexión SSE con el
-/// backend. Cuando la usuaria cambia un registro en otro dispositivo o pestaña,
-/// llega `records-changed` y la app recarga solo esos datos, sin *polling*.
 class RealtimeService extends ChangeNotifier {
   RealtimeService(this._api, {SseConnection? connection})
       : _connection = connection ?? SseConnection();
@@ -58,6 +52,7 @@ class RealtimeService extends ChangeNotifier {
   int _eventsReceived = 0;
   DateTime? _lastEventAt;
   bool _wanted = false;
+  bool _paused = false;
   int _attempt = 0;
   Timer? _retry;
 
@@ -66,10 +61,8 @@ class RealtimeService extends ChangeNotifier {
   int get eventsReceived => _eventsReceived;
   DateTime? get lastEventAt => _lastEventAt;
 
-  /// Cambios que llegan del servidor.
   Stream<RealtimeEvent> get changes => _changes.stream;
 
-  /// Abre la conexión (si ya está abierta no hace nada).
   void start() {
     if (!isSupported || _wanted) return;
     _wanted = true;
@@ -79,20 +72,35 @@ class RealtimeService extends ChangeNotifier {
 
   void stop() {
     _wanted = false;
+    _paused = false;
     _retry?.cancel();
     _connection.close();
     _setStatus(RealtimeStatus.off);
   }
 
+  void pause() {
+    if (!_wanted || _paused) return;
+    _paused = true;
+    _retry?.cancel();
+    _connection.close();
+    _setStatus(RealtimeStatus.paused);
+  }
+
+  void resume() {
+    if (!_wanted || !_paused) return;
+    _paused = false;
+    _attempt = 0;
+    _changes.add(RealtimeEvent(RealtimeResource.all, DateTime.now()));
+    unawaited(_connect());
+  }
+
   Future<void> _connect() async {
-    if (!_wanted) return;
+    if (!_wanted || _paused) return;
     _setStatus(RealtimeStatus.connecting);
     try {
-      // 1) Ticket de un solo uso (EventSource no puede mandar el token).
       final ticket = JsonObject.parse(await _api.post('/api/events/ticket', null), 'ticket')
           .string('ticket');
-      if (!_wanted) return;
-      // 2) Stream SSE.
+      if (!_wanted || _paused) return;
       _connection.open(
         '${_api.baseUrl}/api/events/stream?ticket=${Uri.encodeQueryComponent(ticket)}',
         eventNames: const ['connected', 'records-changed'],
@@ -100,12 +108,15 @@ class RealtimeService extends ChangeNotifier {
         onError: _onError,
       );
     } on ApiError catch (e) {
-      if (e.status == 401) return stop(); // sesión vencida: no insistir
+      if (e.status == 401) return stop();
       _scheduleRetry();
     } catch (_) {
       _scheduleRetry();
     }
   }
+
+  @visibleForTesting
+  void debugEmit(RealtimeResource resource) => _changes.add(RealtimeEvent(resource, DateTime.now()));
 
   void _onEvent(String name, String data) {
     if (name == 'connected') {
@@ -126,16 +137,13 @@ class RealtimeService extends ChangeNotifier {
     _changes.add(event);
   }
 
-  /// El ticket es de un solo uso, así que la reconexión automática del
-  /// navegador fallaría: cerramos y pedimos un ticket nuevo con espera
-  /// creciente (5 s, 10 s, 20 s... máximo 60 s).
   void _onError() {
     _connection.close();
     _scheduleRetry();
   }
 
   void _scheduleRetry() {
-    if (!_wanted) return;
+    if (!_wanted || _paused) return;
     _setStatus(RealtimeStatus.retrying);
     final seconds = min(60, 5 * pow(2, _attempt).toInt());
     _attempt++;

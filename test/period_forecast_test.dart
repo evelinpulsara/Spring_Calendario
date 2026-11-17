@@ -51,7 +51,6 @@ void main() {
     expect(f.likelyStart, DateTime(2026, 11, 20));
     expect(f.ovulationDate, DateTime(2026, 11, 6));
     expect(f.periodLength, 5);
-    // Pocos datos: ventana de 2 días a cada lado.
     expect(f.earliestStart, DateTime(2026, 11, 18));
     expect(f.latestStart, DateTime(2026, 11, 22));
     expect(f.isFromAi, isFalse);
@@ -68,14 +67,12 @@ void main() {
   });
 
   test('un periodo recién empezado no acorta la duración esperada', () {
-    // Empezó hace 1 día (solo 2 días registrados) y suele durar 6.
     final cycles = calculator.buildCycles(days(DateTime(2026, 11, 12), 2));
     final input = inputFor(cycles, DateTime(2026, 11, 13), typicalPeriod: 6);
     expect(input.expectedPeriodLength, 6);
   });
 
   test('con la predicción: días de posible inicio y días opacos del periodo actual', () {
-    // Registró solo el primer día; la predicción dice que dura 5.
     final cycles = calculator.buildCycles(days(DateTime(2026, 11, 13), 1));
     final projection = calculator.project(
       cycles: cycles,

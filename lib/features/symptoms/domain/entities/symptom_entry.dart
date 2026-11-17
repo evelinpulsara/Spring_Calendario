@@ -1,6 +1,5 @@
 import 'package:spring_calendario/features/symptoms/domain/entities/symptom_type.dart';
 
-/// A symptom recorded on a specific day. Intensity goes from 1 (mild) to 5 (strong).
 class SymptomEntry {
   const SymptomEntry({
     required this.id,

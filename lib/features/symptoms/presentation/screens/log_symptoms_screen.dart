@@ -12,14 +12,12 @@ import 'package:spring_calendario/shared/widgets/responsive.dart';
 import 'package:spring_calendario/shared/widgets/spring_card.dart';
 import 'package:spring_calendario/shared/widgets/section_title.dart';
 
-/// Arguments for opening the log screen as a separate route.
 class LogSymptomsArgs {
   const LogSymptomsArgs({this.initialDate, this.preselected});
   final DateTime? initialDate;
   final SymptomType? preselected;
 }
 
-/// Lets the user record flow intensity and symptoms for a given day.
 class LogSymptomsScreen extends StatefulWidget {
   const LogSymptomsScreen({
     super.key,
@@ -31,7 +29,6 @@ class LogSymptomsScreen extends StatefulWidget {
   final DateTime? initialDate;
   final SymptomType? preselected;
 
-  /// True when opened with Navigator.push (shows a back button, closes on save).
   final bool isStandalone;
 
   @override
@@ -227,8 +224,8 @@ class _LogSymptomsScreenState extends State<LogSymptomsScreen> {
         child: wide
             ? StaggeredListView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                children: [dateCard, symptomsCard],
                 sideChildren: [flowCard, _DaySummaryCard(flow: _flow, levels: _levels), saveButton],
+                children: [dateCard, symptomsCard],
               )
             : StaggeredListView(
                 maxWidth: 760,
@@ -270,7 +267,6 @@ class _IntensitySelector extends StatelessWidget {
   }
 }
 
-/// Lista de síntomas: una columna en celular, dos en computadora.
 class _SymptomGrid extends StatelessWidget {
   const _SymptomGrid({required this.columns, required this.children});
 
@@ -306,7 +302,6 @@ class _SymptomGrid extends StatelessWidget {
   }
 }
 
-/// Resumen de lo que se va a guardar (solo en computadora).
 class _DaySummaryCard extends StatelessWidget {
   const _DaySummaryCard({required this.flow, required this.levels});
 

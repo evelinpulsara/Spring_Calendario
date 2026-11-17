@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <!--
-    $FLUTTER_BASE_HREF lo reemplaza `flutter build web --base-href` (por defecto "/").
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
@@ -12,7 +9,6 @@
   <meta name="description" content="Spring: sigue tu ciclo menstrual, síntomas y predicciones día a día.">
   <meta name="theme-color" content="#8E6BE8">
 
-  <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Spring">
@@ -22,14 +18,6 @@
   <title>Spring</title>
   <link rel="manifest" href="manifest.json">
 
-  <!--
-    Patrón de rendering (tema 4): la app es CSR (Client-Side Rendering) porque
-    es un panel privado con sesión, sin necesidad de SEO. Su punto débil es el
-    FCP: el navegador no pinta nada hasta descargar y ejecutar main.dart.js.
-    Para mejorarlo, este esqueleto es HTML/CSS ESTÁTICO generado en el build
-    (como SSG): se pinta de inmediato desde la CDN de Vercel y se quita cuando
-    Flutter dibuja su primer frame.
-  -->
   <style>
     html, body { margin: 0; height: 100%; background: #FAF8FF; }
     #shell {
@@ -43,7 +31,6 @@
       width: 64px; height: 64px; border-radius: 50%;
       background: radial-gradient(circle at 35% 35%, #FFF7E8 0 55%, #E9E3FF 56%);
       box-shadow: 0 8px 24px rgba(142, 107, 232, .35);
-      /* transform/opacity: animación en el Compositor Thread, no bloquea el Main Thread */
       animation: pulse 1.4s ease-in-out infinite;
     }
     #shell h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: .2px; }
@@ -57,7 +44,6 @@
     @media (prefers-reduced-motion: reduce) { #shell .moon { animation: none; } }
   </style>
 
-  <!-- Métricas INP / FCP (tema 1). Se carga antes que Flutter para medir todo. -->
   <script src="perf/web_vitals.js"></script>
 </head>
 <body>
@@ -68,7 +54,6 @@
   </div>
 
   <script>
-    // Quita el esqueleto cuando Flutter pinta su primer frame.
     window.addEventListener('flutter-first-frame', function () {
       var shell = document.getElementById('shell');
       if (!shell) return;
@@ -76,8 +61,6 @@
       setTimeout(function () { shell.remove(); }, 300);
     });
 
-    // Service Worker (tema 3): la app abre sin internet. Se registra después
-    // de cargar para no competir con la descarga de la app.
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
         navigator.serviceWorker.register('sw.js').then(function () {

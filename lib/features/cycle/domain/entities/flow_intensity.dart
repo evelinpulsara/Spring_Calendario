@@ -1,6 +1,5 @@
 import 'package:spring_calendario/core/l10n/app_language.dart';
 
-/// How heavy the menstrual flow is on a given day.
 enum FlowIntensity { none, light, medium, heavy }
 
 extension FlowIntensityLabel on FlowIntensity {

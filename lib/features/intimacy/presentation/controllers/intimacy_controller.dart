@@ -5,7 +5,6 @@ import 'package:spring_calendario/features/intimacy/domain/entities/intimacy_ent
 import 'package:spring_calendario/features/intimacy/domain/repositories/intimacy_repository.dart';
 import 'package:spring_calendario/features/intimacy/domain/services/pregnancy_risk.dart';
 
-/// Estado de las relaciones registradas y su riesgo estimado.
 class IntimacyController extends ChangeNotifier {
   IntimacyController({
     required IntimacyRepository repository,
@@ -58,7 +57,6 @@ class IntimacyController extends ChangeNotifier {
     return _riskCalculator.assess(entry, projection, AppDateUtils.today());
   }
 
-  /// Riesgo de todas las relaciones (más recientes primero).
   List<IntimacyRiskInfo> riskReport(CycleProjection projection) {
     final today = AppDateUtils.today();
     return entries.reversed
@@ -66,7 +64,6 @@ class IntimacyController extends ChangeNotifier {
         .toList();
   }
 
-  /// La relación más reciente que necesita atención (riesgo alto, ≤ 5 días).
   IntimacyRiskInfo? urgentRisk(CycleProjection projection) {
     for (final info in riskReport(projection)) {
       if (info.needsAttention) return info;

@@ -7,7 +7,6 @@ import 'package:spring_calendario/features/symptoms/presentation/screens/log_sym
 import 'package:spring_calendario/shared/widgets/animations.dart';
 import 'package:spring_calendario/shared/widgets/main_shell.dart';
 
-/// Named routes and the route generator.
 class AppRoutes {
   AppRoutes._();
 
@@ -18,11 +17,8 @@ class AppRoutes {
   static const String logSymptoms = '/log-symptoms';
   static const String cycleSetup = '/cycle-setup';
 
-  /// Inicio después de iniciar sesión: cuestionario si es nueva, si no, la app.
   static String afterLogin(bool cycleSetupCompleted) => cycleSetupCompleted ? home : cycleSetup;
 
-  /// `auth` receives a bool argument: true to start in login mode.
-  /// `logSymptoms` receives an optional [LogSymptomsArgs].
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     final Widget page;
     switch (settings.name) {

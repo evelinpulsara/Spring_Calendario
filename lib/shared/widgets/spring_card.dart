@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:spring_calendario/core/theme/app_colors.dart';
 import 'package:spring_calendario/shared/widgets/animations.dart';
 
-/// Rounded card with a soft purple shadow, used all over the app.
 class SpringCard extends StatelessWidget {
   const SpringCard({
     super.key,

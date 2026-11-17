@@ -1,6 +1,5 @@
 import 'package:spring_calendario/core/l10n/app_language.dart';
 
-/// Date helpers. All cycle logic works with "date only" values (no time).
 class AppDateUtils {
   AppDateUtils._();
 
@@ -39,12 +38,14 @@ class AppDateUtils {
   static DateTime addDays(DateTime date, int days) =>
       DateTime(date.year, date.month, date.day + days);
 
-  /// Whole days between two dates (safe across daylight saving changes).
   static int daysBetween(DateTime from, DateTime to) {
     final a = DateTime.utc(from.year, from.month, from.day);
     final b = DateTime.utc(to.year, to.month, to.day);
     return b.difference(a).inDays;
   }
+
+  static String isoDate(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   static bool isSameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
@@ -53,14 +54,12 @@ class AppDateUtils {
       ? '${_months[date.month - 1]} de ${date.year}'
       : '${_months[date.month - 1]} ${date.year}';
 
-  /// "13 Nov" en español, "Nov 13" en inglés.
   static String shortDate(DateTime date) => AppLanguage.isSpanish
       ? '${date.day} ${_monthsShort[date.month - 1]}'
       : '${_monthsShort[date.month - 1]} ${date.day}';
 
   static String longDate(DateTime date) => '${_weekdays[date.weekday - 1]}, ${shortDate(date)}';
 
-  /// Mes corto en minúscula: "oct", "nov"...
   static String monthShort(DateTime date) => _monthsShort[date.month - 1].toLowerCase();
 
   static String range(DateTime start, DateTime end) {

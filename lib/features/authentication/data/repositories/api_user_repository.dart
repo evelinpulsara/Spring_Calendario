@@ -3,7 +3,6 @@ import 'package:spring_calendario/core/network/api_client.dart';
 import 'package:spring_calendario/features/authentication/domain/entities/user.dart';
 import 'package:spring_calendario/features/authentication/domain/repositories/user_repository.dart';
 
-/// Cuentas guardadas en la base de datos a través del backend.
 class ApiUserRepository implements UserRepository {
   ApiUserRepository(this._api);
 
@@ -18,7 +17,7 @@ class ApiUserRepository implements UserRepository {
       _current = userFromJson(await _api.get('/api/me') as Map<String, dynamic>);
       return _current;
     } on ApiError catch (e) {
-      if (e.status == 401) await _api.clearToken(); // sesión vencida
+      if (e.status == 401) await _api.clearToken();
       return null;
     }
   }
@@ -58,7 +57,6 @@ class ApiUserRepository implements UserRepository {
     await _api.clearToken();
   }
 
-  /// Mensaje para la usuaria según el código de error del backend.
   static String messageFor(ApiError e) {
     switch (e.code) {
       case 'invalid_credentials':

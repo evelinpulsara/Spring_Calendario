@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spring_calendario/features/symptoms/domain/entities/symptom_type.dart';
 
-/// Icons for each symptom (kept in the presentation layer on purpose).
 extension SymptomTypeVisuals on SymptomType {
   IconData get icon {
     switch (this) {

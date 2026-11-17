@@ -12,16 +12,9 @@ import 'package:spring_calendario/shared/widgets/moon_widget.dart';
 import 'package:spring_calendario/shared/widgets/responsive.dart';
 import 'package:spring_calendario/shared/widgets/spring_card.dart';
 
-/// Cuestionario inicial: edad, duración del periodo, duración del ciclo,
-/// regularidad y fecha de la última menstruación. Con esto la IA hace la
-/// primera predicción.
-///
-/// Rangos de referencia (ACOG): adolescentes, ciclos de 21–45 días;
-/// adultas, 24–38 días; el sangrado suele durar hasta 7 días.
 class CycleSetupScreen extends StatefulWidget {
   const CycleSetupScreen({super.key, this.isEditing = false});
 
-  /// true cuando se abre desde Perfil para actualizar los datos.
   final bool isEditing;
 
   @override
@@ -53,7 +46,6 @@ class _CycleSetupScreenState extends State<CycleSetupScreen> {
     _cycleLength = (user?.averageCycleLength ?? 28).clamp(20, 45);
     _regularity = user?.regularity ?? CycleRegularity.unsure;
     _lastStart = cycles.isEmpty ? null : cycles.last.startDate;
-    // Si aún no se cargaron los periodos registrados, cargarlos para sugerir la fecha.
     if (cycles.isEmpty) {
       context.read<CycleController>().load().then((_) {
         if (!mounted || _lastStart != null) return;
@@ -188,7 +180,6 @@ class _CycleSetupScreenState extends State<CycleSetupScreen> {
     );
   }
 
-  // ── Paso 1: edad ─────────────────────────────────────────────────────────
   Widget _ageStep() => _StepScaffold(
         icon: const MoonWidget(size: 64, progress: 0.2),
         title: AppLanguage.tr('¿En qué etapa estás?', 'Which stage are you in?'),
@@ -216,7 +207,6 @@ class _CycleSetupScreenState extends State<CycleSetupScreen> {
         ],
       );
 
-  // ── Paso 2: duración del periodo ─────────────────────────────────────────
   Widget _periodStep() => _StepScaffold(
         icon: const Icon(Icons.water_drop_rounded, size: 56, color: AppColors.deepPink),
         title: AppLanguage.tr('¿Cuántos días dura tu periodo?', 'How many days does your period last?'),
@@ -264,7 +254,6 @@ class _CycleSetupScreenState extends State<CycleSetupScreen> {
         ],
       );
 
-  // ── Paso 3: duración del ciclo ───────────────────────────────────────────
   Widget _cycleStep() {
     final teen = _ageGroup == AgeGroup.teen;
     final min = teen ? 21 : 24;
@@ -316,7 +305,6 @@ class _CycleSetupScreenState extends State<CycleSetupScreen> {
     );
   }
 
-  // ── Paso 4: regularidad ──────────────────────────────────────────────────
   Widget _regularityStep() => _StepScaffold(
         icon: const Icon(Icons.timeline_rounded, size: 56, color: AppColors.purple),
         title: AppLanguage.tr('¿Tu ciclo es regular?', 'Is your cycle regular?'),
@@ -352,7 +340,6 @@ class _CycleSetupScreenState extends State<CycleSetupScreen> {
         ],
       );
 
-  // ── Paso 5: última menstruación ──────────────────────────────────────────
   Widget _lastPeriodStep() {
     final today = AppDateUtils.today();
     return _StepScaffold(
@@ -400,8 +387,6 @@ class _CycleSetupScreenState extends State<CycleSetupScreen> {
     );
   }
 }
-
-// ── Piezas visuales ──────────────────────────────────────────────────────────
 
 class _Progress extends StatelessWidget {
   const _Progress({required this.step, required this.total});

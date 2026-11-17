@@ -8,11 +8,9 @@ void main() {
   test('las preguntas del ciclo solo se hacen la primera vez', () async {
     final session = SessionController(LocalUserRepository());
 
-    // Usuaria nueva: al registrarse va al cuestionario.
     await session.register(name: 'Ana', email: 'ana@correo.com', password: '123456');
     expect(AppRoutes.afterLogin(session.user!.cycleSetupCompleted), AppRoutes.cycleSetup);
 
-    // Responde el cuestionario.
     await session.updateProfile(session.user!.copyWith(
       ageGroup: AgeGroup.teen,
       averagePeriodDuration: 6,
@@ -20,7 +18,6 @@ void main() {
       cycleSetupCompleted: true,
     ));
 
-    // Cierra sesión y vuelve a entrar: ya no se le pregunta y se conservan sus respuestas.
     await session.logout();
     await session.login(email: 'ana@correo.com', password: '123456');
     expect(AppRoutes.afterLogin(session.user!.cycleSetupCompleted), AppRoutes.home);

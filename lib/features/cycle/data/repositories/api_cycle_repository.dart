@@ -4,7 +4,6 @@ import 'package:spring_calendario/features/cycle/domain/entities/flow_intensity.
 import 'package:spring_calendario/features/cycle/domain/entities/period_entry.dart';
 import 'package:spring_calendario/features/cycle/domain/repositories/cycle_repository.dart';
 
-/// Días de periodo guardados en la base de datos.
 class ApiCycleRepository implements CycleRepository {
   ApiCycleRepository(this._api);
 
@@ -12,7 +11,6 @@ class ApiCycleRepository implements CycleRepository {
 
   @override
   Future<List<PeriodEntry>> getPeriodEntries() async {
-    // Se parsea según el contrato (PeriodDay en openapi.yaml).
     final list = JsonObject.parseList(await _api.get('/api/period-days'), 'period-days');
     return [
       for (final j in list)
@@ -32,7 +30,6 @@ class ApiCycleRepository implements CycleRepository {
   Future<void> deletePeriodEntry(DateTime date) =>
       _api.delete('/api/period-days/${ApiClient.date(date)}');
 
-  /// Borra todos los registros de la usuaria (periodo, síntomas y relaciones).
   @override
   Future<void> clear() => _api.delete('/api/me/data');
 }

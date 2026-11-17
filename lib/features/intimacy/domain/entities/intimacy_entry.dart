@@ -1,6 +1,5 @@
 import 'package:spring_calendario/core/l10n/app_language.dart';
 
-/// Tipo de protección usada en una relación sexual.
 enum ProtectionType { none, condom, contraceptive, unsure }
 
 extension ProtectionTypeLabel on ProtectionType {
@@ -17,11 +16,9 @@ extension ProtectionTypeLabel on ProtectionType {
     }
   }
 
-  /// Sin protección o sin saberlo: se trata como sin protección.
   bool get isUnprotected => this == ProtectionType.none || this == ProtectionType.unsure;
 }
 
-/// Registro de una relación sexual en un día.
 class IntimacyEntry {
   const IntimacyEntry({
     required this.id,

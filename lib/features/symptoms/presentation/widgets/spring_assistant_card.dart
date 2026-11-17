@@ -9,7 +9,6 @@ import 'package:spring_calendario/features/symptoms/presentation/controllers/sym
 import 'package:spring_calendario/shared/widgets/animations.dart';
 import 'package:spring_calendario/shared/widgets/spring_card.dart';
 
-/// Card that shows the latest Spring Assistant insight and lets the user refresh it.
 class SpringAssistantCard extends StatelessWidget {
   const SpringAssistantCard({super.key});
 

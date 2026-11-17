@@ -1,8 +1,3 @@
-// Prueba de punta a punta contra el backend real (opcional).
-// Requiere el backend encendido en http://localhost:8080:
-//   cd backend && ./mvnw spring-boot:run
-//   cd frontend && flutter test test/e2e_backend_test.dart
-// Si el backend no está encendido, la prueba se salta sola.
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -54,7 +49,6 @@ void main() {
     await intimacy.save(
         IntimacyEntry(id: 'i', date: DateTime(2026, 11, 6), protection: ProtectionType.condom));
 
-    // "Recargar la página": nueva instancia que recupera la sesión guardada.
     final reloaded = ApiUserRepository(ApiClient(baseUrl: 'http://localhost:8080'));
     final restored = await reloaded.getCurrentUser();
     expect(restored!.email, email);

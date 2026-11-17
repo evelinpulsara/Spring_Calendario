@@ -1,6 +1,5 @@
 import 'package:spring_calendario/core/l10n/app_language.dart';
 
-/// Form validators shared by the authentication screens.
 class Validators {
   Validators._();
 

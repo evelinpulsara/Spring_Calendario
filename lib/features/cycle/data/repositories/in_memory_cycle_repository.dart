@@ -5,7 +5,6 @@ import 'package:spring_calendario/features/cycle/domain/entities/flow_intensity.
 import 'package:spring_calendario/features/cycle/domain/entities/period_entry.dart';
 import 'package:spring_calendario/features/cycle/domain/repositories/cycle_repository.dart';
 
-/// Stores period entries in memory. Replace with a database/API version later.
 class InMemoryCycleRepository implements CycleRepository {
   InMemoryCycleRepository() {
     if (AppConstants.seedDemoData) _seed();

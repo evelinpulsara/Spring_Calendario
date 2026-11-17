@@ -1,6 +1,5 @@
 import 'package:spring_calendario/core/l10n/app_language.dart';
 
-/// The four simplified phases of the menstrual cycle.
 enum CyclePhase { menstrual, follicular, ovulation, luteal }
 
 extension CyclePhaseInfo on CyclePhase {

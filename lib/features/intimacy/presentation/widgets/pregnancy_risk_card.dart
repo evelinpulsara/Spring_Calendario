@@ -7,13 +7,11 @@ import 'package:spring_calendario/features/intimacy/presentation/widgets/intimac
 import 'package:spring_calendario/shared/widgets/animations.dart';
 import 'package:spring_calendario/shared/widgets/spring_card.dart';
 
-/// Aviso cálido cuando hay una relación reciente con posible riesgo de embarazo.
 class PregnancyRiskCard extends StatelessWidget {
   const PregnancyRiskCard({super.key, required this.info, this.compact = false});
 
   final IntimacyRiskInfo info;
 
-  /// Versión pequeña para el detalle del día en el calendario.
   final bool compact;
 
   @override
@@ -38,7 +36,6 @@ class PregnancyRiskCard extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Expanded(
-              // Título y etiqueta se acomodan en dos líneas si no hay espacio.
               child: Wrap(
                 spacing: 8,
                 runSpacing: 4,

@@ -5,7 +5,6 @@ import 'package:spring_calendario/features/symptoms/domain/entities/symptom_entr
 import 'package:spring_calendario/features/symptoms/domain/entities/symptom_type.dart';
 import 'package:spring_calendario/features/symptoms/domain/repositories/symptom_repository.dart';
 
-/// Stores symptoms in memory. Replace with a database/API version later.
 class InMemorySymptomRepository implements SymptomRepository {
   InMemorySymptomRepository() {
     if (AppConstants.seedDemoData) _seed();
@@ -35,9 +34,8 @@ class InMemorySymptomRepository implements SymptomRepository {
     ));
   }
 
-  /// Demo pattern: bloating + fatigue just before each period, cramps during it.
   void _seed() {
-    final starts = DemoData.periodStarts(); // newest first
+    final starts = DemoData.periodStarts();
     for (var i = 0; i < starts.length; i++) {
       _add(starts[i], SymptomType.cramps, 4);
       _add(AppDateUtils.addDays(starts[i], 1), SymptomType.cramps, 3);

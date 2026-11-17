@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Spring palette: lavender and purple with soft pink accents.
 class AppColors {
   AppColors._();
 
@@ -17,7 +16,6 @@ class AppColors {
   static const Color night = Color(0xFF241C3D);
   static const Color darkSurface = Color(0xFF3A2F5C);
 
-  /// Números de los días normales (fuera de periodo y ventana fértil) en el calendario.
   static const Color normalDay = Color(0xFF4DB287);
 
   static const LinearGradient heroGradient = LinearGradient(

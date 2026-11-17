@@ -17,8 +17,6 @@ import 'package:spring_calendario/shared/widgets/responsive.dart';
 import 'package:spring_calendario/shared/widgets/spring_card.dart';
 import 'package:spring_calendario/shared/widgets/section_title.dart';
 
-/// Profile and settings: personal info, cycle defaults, notifications,
-/// theme, language and privacy.
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -102,6 +100,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     navigator.pushNamedAndRemoveUntil(AppRoutes.onboarding, (_) => false);
   }
 
+  Future<void> _answerCycleQuestionsAgain() async {
+    await Navigator.of(context).pushNamed(AppRoutes.cycleSetup, arguments: true);
+    if (!mounted) return;
+    final user = context.read<SessionController>().user;
+    if (user == null) return;
+    setState(() {
+      _cycleLength = user.averageCycleLength.toDouble();
+      _periodDuration = user.averagePeriodDuration.toDouble();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
@@ -116,8 +125,90 @@ class _ProfileScreenState extends State<ProfileScreen> {
           mainFlex: 1,
           sideFlex: 1,
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          sideChildren: [
+            SpringCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SectionTitle(t.theme),
+                  SizedBox(
+                    width: double.infinity,
+                    child: SegmentedButton<ThemeMode>(
+                      segments: [
+                        ButtonSegment(
+                            value: ThemeMode.light, label: Text(t.light)),
+                        ButtonSegment(
+                            value: ThemeMode.dark, label: Text(t.dark)),
+                        ButtonSegment(
+                            value: ThemeMode.system, label: Text(t.system)),
+                      ],
+                      selected: {themeController.themeMode},
+                      onSelectionChanged: (s) =>
+                          themeController.setThemeMode(s.first),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            SpringCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SectionTitle(t.language),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(
+                          value: 'en',
+                          label: Text('English'),
+                          icon: Text('🇺🇸',
+                              style: TextStyle(fontSize: 18)),
+                        ),
+                        ButtonSegment(
+                          value: 'es',
+                          label: Text('Español'),
+                          icon: Text('🇲🇽',
+                              style: TextStyle(fontSize: 18)),
+                        ),
+                      ],
+                      selected: {localeController.locale.languageCode},
+                      onSelectionChanged: (s) => localeController
+                          .setLocale(Locale(s.first)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            if (BrowserFeatures.isWeb) const TechPanelCard(),
+
+            SpringCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SectionTitle(t.privacy),
+                  Text(
+                    '${t.privacyNote} ${AppConstants.disclaimer}',
+                    style: const TextStyle(height: 1.4),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: _deleteData,
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    label: Text(t.deleteData),
+                  ),
+                ],
+              ),
+            ),
+
+            ElevatedButton(onPressed: _save, child: Text(t.saveChanges)),
+            const SizedBox(height: 8),
+            TextButton(onPressed: _logout, child: Text(t.logOut)),
+          ],
           children: [
-            // ── Avatar / name ──────────────────────────────────────────
             SpringCard(
               child: Column(
                 children: [
@@ -148,13 +239,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
 
-            // ── Cycle settings ─────────────────────────────────────────
             SpringCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SectionTitle(t.cycleSettings),
-                  Text('${t.avgCycleLen}: ${_cycleLength.round()} ${t.days_label}'),
+                  Text('${t.avgCycleLen}: ${_cycleLength.round()} ${t.daysLabel}'),
                   Slider(
                     value: _cycleLength.clamp(20, 45),
                     min: 20,
@@ -162,7 +252,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     divisions: 25,
                     onChanged: (v) => setState(() => _cycleLength = v),
                   ),
-                  Text('${t.avgPeriodDur}: ${_periodDuration.round()} ${t.days_label}'),
+                  Text('${t.avgPeriodDur}: ${_periodDuration.round()} ${t.daysLabel}'),
                   Slider(
                     value: _periodDuration.clamp(1, 10),
                     min: 1,
@@ -178,17 +268,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () => Navigator.of(context)
-                          .pushNamed(AppRoutes.cycleSetup, arguments: true)
-                          .then((_) {
-                        if (!mounted) return;
-                        final user = context.read<SessionController>().user;
-                        if (user == null) return;
-                        setState(() {
-                          _cycleLength = user.averageCycleLength.toDouble();
-                          _periodDuration = user.averagePeriodDuration.toDouble();
-                        });
-                      }),
+                      onPressed: _answerCycleQuestionsAgain,
                       icon: const Icon(Icons.quiz_rounded),
                       label: Text(t.isSpanish
                           ? 'Responder de nuevo las preguntas de mi ciclo'
@@ -199,7 +279,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
 
-            // ── Notifications ──────────────────────────────────────────
             SpringCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,94 +313,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-
-            // ── Theme ──────────────────────────────────────────────────
-          ],
-          sideChildren: [
-            SpringCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SectionTitle(t.theme),
-                  SizedBox(
-                    width: double.infinity,
-                    child: SegmentedButton<ThemeMode>(
-                      segments: [
-                        ButtonSegment(
-                            value: ThemeMode.light, label: Text(t.light)),
-                        ButtonSegment(
-                            value: ThemeMode.dark, label: Text(t.dark)),
-                        ButtonSegment(
-                            value: ThemeMode.system, label: Text(t.system)),
-                      ],
-                      selected: {themeController.themeMode},
-                      onSelectionChanged: (s) =>
-                          themeController.setThemeMode(s.first),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Language / Idioma ──────────────────────────────────────
-            SpringCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SectionTitle(t.language),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: SegmentedButton<String>(
-                      segments: const [
-                        ButtonSegment(
-                          value: 'en',
-                          label: Text('English'),
-                          icon: Text('🇺🇸',
-                              style: TextStyle(fontSize: 18)),
-                        ),
-                        ButtonSegment(
-                          value: 'es',
-                          label: Text('Español'),
-                          icon: Text('🇲🇽',
-                              style: TextStyle(fontSize: 18)),
-                        ),
-                      ],
-                      selected: {localeController.locale.languageCode},
-                      onSelectionChanged: (s) => localeController
-                          .setLocale(Locale(s.first)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Rendimiento y tiempo real (temas del curso, solo web) ─────
-            if (BrowserFeatures.isWeb) const TechPanelCard(),
-
-            // ── Privacy ────────────────────────────────────────────────
-            SpringCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SectionTitle(t.privacy),
-                  Text(
-                    '${t.privacyNote} ${AppConstants.disclaimer}',
-                    style: const TextStyle(height: 1.4),
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton.icon(
-                    onPressed: _deleteData,
-                    icon: const Icon(Icons.delete_outline_rounded),
-                    label: Text(t.deleteData),
-                  ),
-                ],
-              ),
-            ),
-
-            ElevatedButton(onPressed: _save, child: Text(t.saveChanges)),
-            const SizedBox(height: 8),
-            TextButton(onPressed: _logout, child: Text(t.logOut)),
           ],
         ),
       ),

@@ -1,6 +1,5 @@
 import 'package:spring_calendario/features/cycle/domain/entities/flow_intensity.dart';
 
-/// One logged day of menstrual bleeding.
 class PeriodEntry {
   const PeriodEntry({
     required this.id,

@@ -1,8 +1,6 @@
 import 'package:spring_calendario/core/l10n/app_language.dart';
 import 'package:spring_calendario/features/intimacy/domain/services/pregnancy_risk.dart';
 
-/// Textos de orientación sobre el riesgo de embarazo (información general,
-/// no reemplaza la consulta con un profesional de salud).
 class PregnancyGuidance {
   PregnancyGuidance._();
 

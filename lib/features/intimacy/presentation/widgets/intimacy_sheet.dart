@@ -12,8 +12,6 @@ import 'package:spring_calendario/features/intimacy/presentation/widgets/intimac
 import 'package:spring_calendario/shared/widgets/animations.dart';
 import 'package:spring_calendario/shared/widgets/responsive.dart';
 
-/// Abre el panel para registrar una relación sexual en [date].
-/// En celular es un panel inferior; en computadora, una ventana centrada.
 Future<void> showIntimacySheet(BuildContext context, DateTime date) {
   final day = AppDateUtils.dateOnly(date);
   if (Breakpoints.isWide(context)) {

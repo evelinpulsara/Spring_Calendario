@@ -10,7 +10,6 @@ import 'package:spring_calendario/features/symptoms/domain/entities/symptom_entr
 import 'package:spring_calendario/features/symptoms/domain/entities/symptom_type.dart';
 import 'package:spring_calendario/features/symptoms/domain/services/ai_insight_service.dart';
 
-/// Local, rule-based implementation of [AiInsightService]. No network needed.
 class MockAiInsightService implements AiInsightService {
   static const int _premenstrualWindowDays = 5;
 
@@ -21,9 +20,8 @@ class MockAiInsightService implements AiInsightService {
     CyclePrediction? prediction,
     List<IntimacyRiskInfo> intimacy = const [],
   }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 900)); // simulate latency
+    await Future<void>.delayed(const Duration(milliseconds: 900));
 
-    // Lo más importante primero: una relación reciente en la ventana fértil.
     final recent = intimacy.where((i) => i.daysAgo <= 7 && i.risk != PregnancyRisk.low).toList();
     if (recent.isNotEmpty) {
       final info = recent.first;
@@ -82,7 +80,6 @@ class MockAiInsightService implements AiInsightService {
     );
   }
 
-  /// Symptoms logged in the days before at least two different periods.
   List<SymptomType> _premenstrualSymptoms(
     List<SymptomEntry> symptoms,
     List<MenstrualCycle> cycles,

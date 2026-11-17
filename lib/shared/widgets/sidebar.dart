@@ -8,8 +8,6 @@ import 'package:spring_calendario/features/authentication/presentation/controlle
 import 'package:spring_calendario/shared/widgets/main_shell.dart';
 import 'package:spring_calendario/shared/widgets/moon_widget.dart';
 
-/// Menú lateral para computadora. Se puede esconder (solo iconos) o mostrar
-/// completo con el botón de arriba.
 class Sidebar extends StatelessWidget {
   const Sidebar({
     super.key,
@@ -229,7 +227,6 @@ class _SidebarItemState extends State<_SidebarItem> {
   }
 }
 
-/// Parte de abajo: usuaria y cambio de tema.
 class _Footer extends StatelessWidget {
   const _Footer({required this.expanded});
 

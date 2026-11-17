@@ -45,58 +45,6 @@ class DashboardScreen extends StatelessWidget {
       body: SafeArea(
         child: StaggeredListView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          children: [
-            Text(
-              t.isSpanish ? 'Hola, ${user?.name ?? 'amiga'}' : 'Hello, ${user?.name ?? 'there'}',
-              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Text(AppDateUtils.longDate(today),
-                  style: const TextStyle(color: AppColors.textMuted)),
-            ),
-            if (prediction == null)
-              _EmptyCycleCard(onLogToday: () => cycle.setPeriodDay(today))
-            else
-              _CycleHeroCard(prediction: prediction),
-            if (urgentRisk != null) PregnancyRiskCard(info: urgentRisk),
-            if (prediction != null) const ForecastCard(),
-            if (prediction != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: StatTile(
-                        icon: Icons.water_drop_rounded,
-                        label: t.nextPeriod,
-                        value: cycle.forecast == null
-                          ? AppDateUtils.shortDate(prediction.nextPeriodStart)
-                          : AppDateUtils.range(
-                              cycle.forecast!.earliestStart, cycle.forecast!.latestStart),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: StatTile(
-                        icon: Icons.brightness_2_rounded,
-                        label: t.isSpanish ? 'Ovulación' : 'Ovulation',
-                        value: AppDateUtils.shortDate(prediction.ovulationDate),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: StatTile(
-                        icon: Icons.spa_rounded,
-                        label: t.fertileWindow,
-                        value: AppDateUtils.range(
-                            prediction.fertileWindowStart, prediction.fertileWindowEnd),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
           sideChildren: [
             SpringCard(
               child: Column(
@@ -186,6 +134,58 @@ class DashboardScreen extends StatelessWidget {
               ),
             ),
             const SpringAssistantCard(),
+          ],
+          children: [
+            Text(
+              t.isSpanish ? 'Hola, ${user?.name ?? 'amiga'}' : 'Hello, ${user?.name ?? 'there'}',
+              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Text(AppDateUtils.longDate(today),
+                  style: const TextStyle(color: AppColors.textMuted)),
+            ),
+            if (prediction == null)
+              _EmptyCycleCard(onLogToday: () => cycle.setPeriodDay(today))
+            else
+              _CycleHeroCard(prediction: prediction),
+            if (urgentRisk != null) PregnancyRiskCard(info: urgentRisk),
+            if (prediction != null) const ForecastCard(),
+            if (prediction != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: StatTile(
+                        icon: Icons.water_drop_rounded,
+                        label: t.nextPeriod,
+                        value: cycle.forecast == null
+                          ? AppDateUtils.shortDate(prediction.nextPeriodStart)
+                          : AppDateUtils.range(
+                              cycle.forecast!.earliestStart, cycle.forecast!.latestStart),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: StatTile(
+                        icon: Icons.brightness_2_rounded,
+                        label: t.isSpanish ? 'Ovulación' : 'Ovulation',
+                        value: AppDateUtils.shortDate(prediction.ovulationDate),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: StatTile(
+                        icon: Icons.spa_rounded,
+                        label: t.fertileWindow,
+                        value: AppDateUtils.range(
+                            prediction.fertileWindowStart, prediction.fertileWindowEnd),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
@@ -333,7 +333,6 @@ class _EmptyCycleCard extends StatelessWidget {
   }
 }
 
-/// Luna flotando dentro de un anillo que se llena según el día del ciclo.
 class _CycleRing extends StatefulWidget {
   const _CycleRing({required this.progress});
 
@@ -413,7 +412,6 @@ class _RingPainter extends CustomPainter {
           colors: [AppColors.softPink, Colors.white, AppColors.softPink],
         ).createShader(Rect.fromCircle(center: center, radius: radius)),
     );
-    // Puntito que marca el día actual.
     final angle = -math.pi / 2 + sweep;
     canvas.drawCircle(
       Offset(center.dx + radius * math.cos(angle), center.dy + radius * math.sin(angle)),

@@ -3,7 +3,6 @@ import 'package:spring_calendario/core/network/json_parse.dart';
 import 'package:spring_calendario/features/intimacy/domain/entities/intimacy_entry.dart';
 import 'package:spring_calendario/features/intimacy/domain/repositories/intimacy_repository.dart';
 
-/// Relaciones registradas guardadas en la base de datos.
 class ApiIntimacyRepository implements IntimacyRepository {
   ApiIntimacyRepository(this._api);
 
@@ -11,7 +10,6 @@ class ApiIntimacyRepository implements IntimacyRepository {
 
   @override
   Future<List<IntimacyEntry>> getAll() async {
-    // Se parsea según el contrato (Intimacy en openapi.yaml).
     final list = JsonObject.parseList(await _api.get('/api/intimacy'), 'intimacy');
     return [
       for (final j in list)
@@ -31,7 +29,6 @@ class ApiIntimacyRepository implements IntimacyRepository {
   Future<void> deleteForDate(DateTime date) =>
       _api.delete('/api/intimacy/${ApiClient.date(date)}');
 
-  /// Los datos se borran juntos con DELETE /api/me/data (ver ApiCycleRepository).
   @override
   Future<void> clear() async {}
 }

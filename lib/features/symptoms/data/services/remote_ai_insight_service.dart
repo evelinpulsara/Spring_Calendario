@@ -1,9 +1,8 @@
-import 'dart:convert';
-
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:spring_calendario/core/config/api_config.dart';
 import 'package:spring_calendario/core/l10n/app_language.dart';
+import 'package:spring_calendario/core/network/json_endpoint.dart';
+import 'package:spring_calendario/core/utils/date_utils.dart';
 import 'package:spring_calendario/features/cycle/domain/entities/cycle_prediction.dart';
 import 'package:spring_calendario/features/cycle/domain/entities/menstrual_cycle.dart';
 import 'package:spring_calendario/features/intimacy/domain/services/pregnancy_risk.dart';
@@ -11,34 +10,22 @@ import 'package:spring_calendario/features/symptoms/domain/entities/ai_insight.d
 import 'package:spring_calendario/features/symptoms/domain/entities/symptom_entry.dart';
 import 'package:spring_calendario/features/symptoms/domain/services/ai_insight_service.dart';
 
-/// Asistente Spring con IA real (Gemini).
-///
-/// La app NO llama a Gemini directamente: envía un resumen anónimo (síntomas,
-/// ciclos y predicción, sin nombre ni correo) al backend, que guarda la clave
-/// de la API y consulta a Gemini.
-///
-/// Si el backend no responde, usa [fallback] (respuestas locales) para que la
-/// app siga funcionando.
-class RemoteAiInsightService implements AiInsightService {
+class RemoteAiInsightService with FallbackOnError implements AiInsightService {
   RemoteAiInsightService({
     required AiInsightService fallback,
     http.Client? client,
     String baseUrl = ApiConfig.baseUrl,
     Duration timeout = ApiConfig.aiTimeout,
-    Map<String, String> Function()? headers,
+    HeadersProvider? headers,
   })  : _fallback = fallback,
-        _headers = headers ?? (() => const {'Content-Type': 'application/json'}),
-        _client = client ?? http.Client(),
-        _baseUrl = baseUrl,
-        _timeout = timeout;
+        _endpoint = JsonEndpoint('/api/ai/insight',
+            client: client, baseUrl: baseUrl, timeout: timeout, headers: headers);
 
   final AiInsightService _fallback;
-  final http.Client _client;
-  final String _baseUrl;
-  final Duration _timeout;
+  final JsonEndpoint _endpoint;
 
-  /// Headers de cada llamada (incluye el token de sesión).
-  final Map<String, String> Function() _headers;
+  @override
+  String get fallbackReason => 'Asistente Spring: se usa la respuesta local';
 
   @override
   Future<AiInsight> generateInsight({
@@ -46,53 +33,39 @@ class RemoteAiInsightService implements AiInsightService {
     required List<MenstrualCycle> cycles,
     CyclePrediction? prediction,
     List<IntimacyRiskInfo> intimacy = const [],
-  }) async {
-    try {
-      final response = await _client
-          .post(
-            Uri.parse('$_baseUrl/api/ai/insight'),
-            headers: _headers(),
-            body: jsonEncode(buildRequestBody(
-              symptoms: symptoms,
-              cycles: cycles,
-              prediction: prediction,
-              intimacy: intimacy,
-            )),
-          )
-          .timeout(_timeout);
-
-      if (response.statusCode != 200) {
-        throw Exception('Backend respondió ${response.statusCode}: ${response.body}');
-      }
-      final json = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-      return AiInsight(
-        title: json['title'] as String,
-        message: json['message'] as String,
-        basedOnEntries: (json['basedOnEntries'] as num?)?.toInt() ?? symptoms.length,
-        generatedAt: DateTime.now(),
-        model: json['model'] as String? ?? 'gemini',
-      );
-    } catch (error) {
-      debugPrint('Asistente Spring: se usa la respuesta local ($error)');
-      return _fallback.generateInsight(
+  }) {
+    return remoteOr(
+      () async {
+        final json = await _endpoint.post(buildRequestBody(
+          symptoms: symptoms,
+          cycles: cycles,
+          prediction: prediction,
+          intimacy: intimacy,
+        ));
+        return AiInsight(
+          title: json.string('title'),
+          message: json.string('message'),
+          basedOnEntries: json.optionalInteger('basedOnEntries') ?? symptoms.length,
+          generatedAt: DateTime.now(),
+          model: json.optionalString('model') ?? 'gemini',
+        );
+      },
+      () => _fallback.generateInsight(
         symptoms: symptoms,
         cycles: cycles,
         prediction: prediction,
         intimacy: intimacy,
-      );
-    }
+      ),
+    );
   }
 
-  /// Datos que se envían al backend. Público para poder probarlo.
-  static Map<String, dynamic> buildRequestBody({
+  static Map<String, Object?> buildRequestBody({
     required List<SymptomEntry> symptoms,
     required List<MenstrualCycle> cycles,
     CyclePrediction? prediction,
     List<IntimacyRiskInfo> intimacy = const [],
   }) {
-    String day(DateTime d) =>
-        '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-
+    const day = AppDateUtils.isoDate;
     return {
       'language': AppLanguage.isSpanish ? 'es' : 'en',
       'symptoms': [

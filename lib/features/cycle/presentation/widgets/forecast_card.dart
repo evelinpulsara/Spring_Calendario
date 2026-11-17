@@ -8,7 +8,6 @@ import 'package:spring_calendario/features/cycle/presentation/controllers/cycle_
 import 'package:spring_calendario/shared/widgets/animations.dart';
 import 'package:spring_calendario/shared/widgets/spring_card.dart';
 
-/// Tarjeta con la predicción del próximo periodo (hecha por la IA).
 class ForecastCard extends StatelessWidget {
   const ForecastCard({super.key});
 
@@ -120,7 +119,6 @@ class _ForecastBody extends StatelessWidget {
               fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.deepPink),
         ),
         const SizedBox(height: 8),
-        // Días posibles de inicio; el más probable resaltado.
         Wrap(
           spacing: 6,
           runSpacing: 6,

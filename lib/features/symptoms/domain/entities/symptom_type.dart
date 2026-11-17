@@ -1,6 +1,5 @@
 import 'package:spring_calendario/core/l10n/app_language.dart';
 
-/// Symptoms the user can record.
 enum SymptomType { cramps, headache, mood, bloating, acne, fatigue, appetite, sleep }
 
 extension SymptomTypeLabel on SymptomType {

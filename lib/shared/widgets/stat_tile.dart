@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:spring_calendario/core/theme/app_colors.dart';
 import 'package:spring_calendario/shared/widgets/spring_card.dart';
 
-/// Small card with an icon, a value and a label.
 class StatTile extends StatelessWidget {
   const StatTile({super.key, required this.icon, required this.label, required this.value});
 

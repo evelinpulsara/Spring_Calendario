@@ -20,7 +20,6 @@ import 'package:spring_calendario/features/symptoms/presentation/widgets/symptom
 import 'package:spring_calendario/shared/widgets/responsive.dart';
 import 'package:spring_calendario/shared/widgets/spring_card.dart';
 
-/// Monthly calendar with period days, predictions, fertile window and symptoms.
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
 
@@ -58,7 +57,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final intimacy = context.watch<IntimacyController>();
     final projection = cycle.projection;
     final today = AppDateUtils.today();
-    // En computadora: casillas rectangulares, estilo calendario web.
     final wide = Breakpoints.isWide(context);
 
     final isCurrentMonth = _visibleMonth.year == today.year && _visibleMonth.month == today.month;
@@ -66,7 +64,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final daysInMonth = DateTime(firstDay.year, firstDay.month + 1, 0).day;
     final leadingBlanks = firstDay.weekday - 1;
 
-    // Day-of-week headers translated
     final weekDays =
         t.isSpanish ? ['L', 'M', 'X', 'J', 'V', 'S', 'D'] : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
@@ -100,6 +97,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
       body: SafeArea(
         child: StaggeredListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          sideChildren: [
+            const _Legend(),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 320),
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: SizeTransition(sizeFactor: animation, alignment: AlignmentDirectional.topStart, child: child),
+              ),
+              child: _SelectedDayCard(key: ValueKey(_selected), date: _selected),
+            ),
+          ],
           children: [
             SpringCard(
               child: Column(
@@ -133,7 +141,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           onPressed: () => _changeMonth(1)),
                     ],
                   ),
-                  // "Volver a hoy" cuando se está viendo otro mes.
                   AnimatedSize(
                     duration: const Duration(milliseconds: 250),
                     child: isCurrentMonth
@@ -208,24 +215,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
             if (wide) _MonthSummary(month: _visibleMonth),
           ],
-          sideChildren: [
-            const _Legend(),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 320),
-              transitionBuilder: (child, animation) => FadeTransition(
-                opacity: animation,
-                child: SizeTransition(sizeFactor: animation, axisAlignment: -1, child: child),
-              ),
-              child: _SelectedDayCard(key: ValueKey(_selected), date: _selected),
-            ),
-          ],
         ),
       ),
     );
   }
 }
 
-/// Puntitos con el mes anterior, el actual y el siguiente (se pueden tocar).
 class _MonthDots extends StatelessWidget {
   const _MonthDots({required this.month, required this.onPrevious, required this.onNext});
 
@@ -304,26 +299,21 @@ class _DayCell extends StatelessWidget {
   final bool isPeriod;
   final bool isPredictedPeriod;
 
-  /// Posible día de inicio del próximo periodo (ventana de la predicción).
   final bool isPossibleStart;
 
-  /// Día probable del periodo actual, aún sin registrar (rosa opaco).
   final bool isExpectedPeriod;
   final bool isOvulation;
   final bool isFertile;
   final bool hasSymptoms;
   final bool hasIntimacy;
 
-  /// Corazón lleno = sin protección; solo contorno = con protección.
   final bool unprotectedIntimacy;
   final VoidCallback onTap;
 
-  /// true en pantallas grandes (casillas un poco más redondeadas).
   final bool wide;
 
   @override
   Widget build(BuildContext context) {
-    // Relleno de la casilla: periodo registrado, días probables o predicción.
     Color? fill;
     Color? border;
     final onFill = isPeriod || isExpectedPeriod;
@@ -338,7 +328,6 @@ class _DayCell extends StatelessWidget {
       fill = AppColors.softPink.withAlpha(120);
     }
 
-    // Color del número: verde (normal), morado (ventana fértil / ovulación).
     final Color numberColor;
     if (onFill) {
       numberColor = Colors.white;
@@ -387,7 +376,6 @@ class _DayCell extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Marcadores arriba del número: ovulación, relación, síntomas.
                       SizedBox(
                         height: 14,
                         child: Row(
@@ -457,7 +445,6 @@ class _DayCell extends StatelessWidget {
   }
 }
 
-/// Resumen del mes visible (solo en computadora, debajo del calendario).
 class _MonthSummary extends StatelessWidget {
   const _MonthSummary({required this.month});
 
@@ -537,7 +524,6 @@ class _MonthSummary extends StatelessWidget {
   }
 }
 
-/// Corazón de relación sexual: lleno = sin protección; contorno grueso = con protección.
 class _HeartMarker extends StatelessWidget {
   const _HeartMarker({required this.filled, this.color = AppColors.deepPink, this.size = 13});
 
@@ -573,7 +559,6 @@ class _Legend extends StatelessWidget {
           ],
         );
 
-    // Cuadrito redondeado como las casillas del calendario.
     Widget box({Color? fill, Color? border}) => Container(
           width: 14,
           height: 14,
@@ -584,7 +569,6 @@ class _Legend extends StatelessWidget {
           ),
         );
 
-    // Número de ejemplo con el color del tipo de día.
     Widget number(Color color) =>
         Text('12', style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w800));
 

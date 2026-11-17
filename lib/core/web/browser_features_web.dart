@@ -15,6 +15,7 @@ WebVitals? readVitals() {
   int? n(String k) => (raw[k] as num?)?.round();
   return WebVitals(
     supported: raw['supported'] == true,
+    estimated: raw['estimated'] == true,
     inp: n('inp'),
     rating: raw['rating'] as String?,
     inputDelay: n('inputDelay'),
@@ -29,8 +30,13 @@ WebVitals? readVitals() {
   );
 }
 
-/// Envía los datos al Web Worker con postMessage, espera su respuesta y
-/// descarga el CSV. El Main Thread no hace el trabajo pesado.
+void onVisibilityChange(void Function(bool hidden) listener) {
+  web.document.addEventListener(
+    'visibilitychange',
+    ((web.Event _) => listener(web.document.hidden)).toJS,
+  );
+}
+
 Future<ExportResult> exportCsv(Map<String, Object?> payload, String fileName) {
   final completer = Completer<ExportResult>();
   final worker = web.Worker('workers/export_worker.js'.toJS);
@@ -60,7 +66,6 @@ Future<ExportResult> exportCsv(Map<String, Object?> payload, String fileName) {
 }
 
 void _download(String csv, String fileName) {
-  // "﻿" para que Excel reconozca las tildes (UTF-8).
   final blob = web.Blob(['﻿$csv'.toJS].toJS, web.BlobPropertyBag(type: 'text/csv;charset=utf-8'));
   final url = web.URL.createObjectURL(blob);
   final a = web.HTMLAnchorElement()

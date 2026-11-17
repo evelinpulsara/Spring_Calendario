@@ -8,7 +8,6 @@ import 'package:spring_calendario/core/theme/app_colors.dart';
 import 'package:spring_calendario/core/utils/validators.dart';
 import 'package:spring_calendario/features/authentication/presentation/controllers/session_controller.dart';
 
-/// Local (simulated) login / register screen.
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key, this.startInLoginMode = false});
 
@@ -45,7 +44,6 @@ class _AuthScreenState extends State<AuthScreen> {
             password: _passwordController.text,
           );
     if (success && mounted) {
-      // Usuaria nueva (o sin cuestionario): primero las preguntas de su ciclo.
       Navigator.of(context).pushNamedAndRemoveUntil(
         AppRoutes.afterLogin(session.user?.cycleSetupCompleted ?? false),
         (_) => false,

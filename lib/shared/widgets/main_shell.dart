@@ -13,10 +13,6 @@ import 'package:spring_calendario/shared/widgets/animations.dart';
 import 'package:spring_calendario/shared/widgets/sidebar.dart';
 import 'package:spring_calendario/shared/widgets/responsive.dart';
 
-/// Estructura principal con las cinco secciones.
-///
-/// * Celular: barra de navegación abajo.
-/// * Computadora: menú lateral a la izquierda (como una página web).
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -27,7 +23,6 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _index = 0;
 
-  /// null = automático según el ancho de la ventana.
   bool? _menuExpanded;
   late final Future<List<void>> _loading;
 

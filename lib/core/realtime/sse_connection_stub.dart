@@ -2,7 +2,6 @@ import 'package:spring_calendario/core/realtime/sse_connection.dart';
 
 SseConnection createSseConnection() => _NoSseConnection();
 
-/// Fuera del navegador no hay `EventSource`: el tiempo real queda apagado.
 class _NoSseConnection implements SseConnection {
   @override
   bool get isSupported => false;
